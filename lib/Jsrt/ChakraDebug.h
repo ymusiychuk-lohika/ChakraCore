@@ -280,11 +280,16 @@
     /// <remarks>
     ///     <para>
     ///     [{
-    ///         "scriptId" : 1,
+    ///         "scriptId" : 2,
     ///         "fileName" : "c:\\Test\\Test.js",
-    ///         "lineCount" : 12,
-    ///         "sourceLength" : 195,
-    ///         "handle" : 3
+    ///         "lineCount" : 4,
+    ///         "sourceLength" : 111
+    ///       }, {
+    ///         "scriptId" : 3,
+    ///         "parentScriptId" : 2,
+    ///         "scriptType" : "eval code",
+    ///         "lineCount" : 1,
+    ///         "sourceLength" : 12
     ///     }]
     ///     </para>
     /// </remarks>
@@ -360,15 +365,13 @@
     /// <remarks>
     ///     <para>
     ///     [{
-    ///        "index" : 0,
-    ///        "scriptId" : 1,
-    ///        "fileName" : "c:\\Test\\Test.js",
-    ///        "line" : 0,
-    ///        "column" : 62,
-    ///        "sourceText" : "var x = 1",
-    ///        "functionHandle" : 2,
-    ///        "scriptHandle" : 3,
-    ///        "handle" : 1
+    ///         "index" : 0,
+    ///         "scriptId" : 2,
+    ///         "line" : 3,
+    ///         "column" : 0,
+    ///         "sourceLength" : 9,
+    ///         "sourceText" : "var x = 1",
+    ///         "functionHandle" : 1
     ///     }]
     ///    </para>
     /// </remarks>

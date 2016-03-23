@@ -498,7 +498,7 @@ JsDiagGetFunctionPosition(
                     if (funcInfoObject != nullptr)
                     {
                         JsrtDebugUtils::AddScriptIdToObject(funcInfoObject, utf8SourceInfo);
-                        JsrtDebugUtils::AddFileNameToObject(funcInfoObject, utf8SourceInfo);
+                        JsrtDebugUtils::AddFileNameOrScriptTypeToObject(funcInfoObject, utf8SourceInfo);
                         JsrtDebugUtils::AddPropertyToObject(funcInfoObject, JsrtDebugPropertyId::line, lineNumber, scriptContext);
                         JsrtDebugUtils::AddPropertyToObject(funcInfoObject, JsrtDebugPropertyId::column, columnNumber, scriptContext);
                         JsrtDebugUtils::AddPropertyToObject(funcInfoObject, JsrtDebugPropertyId::firstStatementLine, firstStatementLine, scriptContext);
@@ -560,13 +560,11 @@ JsDiagGetStackProperties(
 
         VALIDATE_IS_DEBUGGING(debugObject);
 
-        DebuggerObjectBase* debuggerObject = nullptr;
-        if (!debugObject->TryGetFrameObjectFromFrameIndex(scriptContext, stackFrameIndex, &debuggerObject))
+        DebuggerStackFrame* debuggerStackFrame = nullptr;
+        if (!debugObject->TryGetFrameObjectFromFrameIndex(scriptContext, stackFrameIndex, &debuggerStackFrame))
         {
             return JsErrorDiagObjectNotFound;
         }
-
-        DebuggerObjectStackFrame* debuggerStackFrame = (DebuggerObjectStackFrame*)debuggerObject;
 
         Js::DynamicObject* localsObject = debuggerStackFrame->GetLocalsObject();
 
@@ -678,15 +676,14 @@ JsDiagEvaluate(
 
         VALIDATE_IS_DEBUGGING(debugObject);
 
-        DebuggerObjectBase* debuggerObject = nullptr;
-        if (!debugObject->TryGetFrameObjectFromFrameIndex(scriptContext, stackFrameIndex, &debuggerObject))
+        DebuggerStackFrame* debuggerStackFrame = nullptr;
+        if (!debugObject->TryGetFrameObjectFromFrameIndex(scriptContext, stackFrameIndex, &debuggerStackFrame))
         {
             return JsErrorDiagObjectNotFound;
         }
 
-        DebuggerObjectStackFrame* debuggerStackFrame = (DebuggerObjectStackFrame*)debuggerObject;
-
         Js::DynamicObject* result = debuggerStackFrame->Evaluate(expression, false);
+
         if (result != nullptr)
         {
             *evalResult = Js::CrossSite::MarshalVar(scriptContext, result);

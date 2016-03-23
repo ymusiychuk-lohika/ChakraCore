@@ -489,18 +489,6 @@ var controllerObj = (function () {
                     }
 
                     stackTrace[i]["functionHandle"] = lookupObject;
-
-                    lookupObject = callHostFunction(hostDebugObject.JsDiagGetObjectFromHandle, stackTrace[i].scriptHandle);
-                    if ("fileName" in lookupObject) {
-                        lookupObject["fileName"] = filterFileName(lookupObject["fileName"]);
-                    }
-                    if ("handle" in lookupObject) {
-                        delete lookupObject["handle"];
-                    }
-
-
-                    stackTrace[i]["scriptHandle"] = lookupObject;
-                    delete stack["handle"];
                 }
 
                 var lookupHandles = [];
