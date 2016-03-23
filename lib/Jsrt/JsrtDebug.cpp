@@ -21,9 +21,8 @@ JsrtDebug::JsrtDebug(ThreadContext* threadContext) :
     callBackDepth(0),
     debugDocumentManager(nullptr),
     stackFrames(nullptr),
-    breakOnExceptionType(JsDiagBreakOnExceptionTypeUncaught)
+    breakOnExceptionAttributes(JsDiagBreakOnExceptionAttributeUncaught)
 {
-    // ToDo (SaAgarwa): Confirm the default value of breakOnExceptionType
     Assert(threadContext != nullptr);
 }
 
@@ -55,8 +54,26 @@ JsrtDebug::~JsrtDebug()
 
 void JsrtDebug::SetDebugEventCallback(JsDiagDebugEventCallback debugEventCallback, void* callbackState)
 {
+    Assert(this->debugEventCallback == nullptr);
+    Assert(this->callbackState == nullptr);
+
     this->debugEventCallback = debugEventCallback;
     this->callbackState = callbackState;
+}
+
+void * JsrtDebug::GetAndClearCallback()
+{
+    void* currentCallbackState = this->callbackState;
+
+    this->debugEventCallback = nullptr;
+    this->callbackState = nullptr;
+
+    return currentCallbackState;
+}
+
+bool JsrtDebug::IsDebugEventCallbackSet() const
+{
+    return this->debugEventCallback != nullptr;
 }
 
 bool JsrtDebug::CanHalt(Js::InterpreterHaltState* haltState)
@@ -115,12 +132,12 @@ bool JsrtDebug::IsInClosedState()
 
 bool JsrtDebug::IsExceptionReportingEnabled()
 {
-    return this->breakOnExceptionType != JsDiagBreakOnExceptionTypeNone;
+    return (this->GetBreakOnException() & JsDiagBreakOnExceptionAttributeNone) != JsDiagBreakOnExceptionAttributeNone;
 }
 
 bool JsrtDebug::IsFirstChanceExceptionEnabled()
 {
-    return this->breakOnExceptionType == JsDiagBreakOnExceptionTypeAll;
+    return (this->GetBreakOnException() & JsDiagBreakOnExceptionAttributeFirstChance) == JsDiagBreakOnExceptionAttributeFirstChance;
 }
 
 HRESULT JsrtDebug::DbgRegisterFunction(Js::ScriptContext * scriptContext, Js::FunctionBody * functionBody, DWORD_PTR dwDebugSourceContext, LPCWSTR title)
@@ -622,6 +639,14 @@ void JsrtDebug::ClearDebugDocument(Js::ScriptContext * scriptContext)
     }
 }
 
+void JsrtDebug::ClearBreakpointDebugDocumentDictionary()
+{
+    if (this->debugDocumentManager != nullptr)
+    {
+        this->debugDocumentManager->ClearBreakpointDebugDocumentDictionary();
+    }
+}
+
 bool JsrtDebug::RemoveBreakpoint(UINT breakpointId)
 {
     if (this->debugDocumentManager != nullptr)
@@ -632,14 +657,14 @@ bool JsrtDebug::RemoveBreakpoint(UINT breakpointId)
     return false;
 }
 
-void JsrtDebug::SetBreakOnException(JsDiagBreakOnExceptionType breakOnExceptionType)
+void JsrtDebug::SetBreakOnException(JsDiagBreakOnExceptionAttributes exceptionAttributes)
 {
-    this->breakOnExceptionType = breakOnExceptionType;
+    this->breakOnExceptionAttributes = exceptionAttributes;
 }
 
-JsDiagBreakOnExceptionType JsrtDebug::GetBreakOnException()
+JsDiagBreakOnExceptionAttributes JsrtDebug::GetBreakOnException()
 {
-    return this->breakOnExceptionType;
+    return this->breakOnExceptionAttributes;
 }
 
 JsDiagDebugEvent JsrtDebug::GetDebugEventFromStopType(Js::StopType stopType)

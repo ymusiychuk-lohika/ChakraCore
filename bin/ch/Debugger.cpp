@@ -57,9 +57,9 @@ JsValueRef Debugger::JsDiagRequestAsyncBreak(JsValueRef callee, bool isConstruct
 
 JsValueRef Debugger::JsDiagGetBreakpoints(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState)
 {
-    JsValueRef breakPoints = JS_INVALID_REFERENCE;
-    IfJsErrorFailLogAndRet(ChakraRTInterface::JsDiagGetBreakpoints(&breakPoints));
-    return breakPoints;
+    JsValueRef breakpoints = JS_INVALID_REFERENCE;
+    IfJsErrorFailLogAndRet(ChakraRTInterface::JsDiagGetBreakpoints(&breakpoints));
+    return breakpoints;
 }
 
 JsValueRef Debugger::JsDiagRemoveBreakpoint(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState)
@@ -79,15 +79,15 @@ JsValueRef Debugger::JsDiagRemoveBreakpoint(JsValueRef callee, bool isConstructC
 
 JsValueRef Debugger::JsDiagSetBreakOnException(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState)
 {
-    int breakOnExceptionType;
+    int exceptionAttributes;
 
     if (argumentCount > 1)
     {
         JsValueRef breakOnException;
         IfJsErrorFailLogAndRet(ChakraRTInterface::JsConvertValueToNumber(arguments[1], &breakOnException));
-        IfJsErrorFailLogAndRet(ChakraRTInterface::JsNumberToInt(breakOnException, &breakOnExceptionType));
+        IfJsErrorFailLogAndRet(ChakraRTInterface::JsNumberToInt(breakOnException, &exceptionAttributes));
 
-        IfJsErrorFailLogAndRet(ChakraRTInterface::JsDiagSetBreakOnException((JsDiagBreakOnExceptionType)breakOnExceptionType));
+        IfJsErrorFailLogAndRet(ChakraRTInterface::JsDiagSetBreakOnException(Debugger::GetRuntime(), (JsDiagBreakOnExceptionAttributes)exceptionAttributes));
     }
 
     return JS_INVALID_REFERENCE;
@@ -187,33 +187,35 @@ JsValueRef Debugger::JsDiagEvaluate(JsValueRef callee, bool isConstructCall, JsV
     return result;
 }
 
-Debugger::Debugger()
+Debugger::Debugger(JsRuntimeHandle runtime)
 {
+    this->m_runtime = runtime;
     this->m_context = JS_INVALID_REFERENCE;
 }
 
 Debugger::~Debugger()
 {
+    this->m_runtime = JS_INVALID_RUNTIME_HANDLE;
 }
 
 Debugger * Debugger::GetDebugger(JsRuntimeHandle runtime)
 {
     if (Debugger::debugger == nullptr)
     {
-        Debugger::debugger = new Debugger();
-        Debugger::debugger->Initialize(runtime);
+        Debugger::debugger = new Debugger(runtime);
+        Debugger::debugger->Initialize();
     }
 
     return Debugger::debugger;
 }
 
-bool Debugger::Initialize(JsRuntimeHandle runtime)
+bool Debugger::Initialize()
 {
     // Create a new context and run dbgcontroller.js in that context
     // setup dbgcontroller.js callbacks
     // put runtime in debug mode
 
-    IfJsrtErrorFailLogAndRetFalse(ChakraRTInterface::JsCreateContext(runtime, &m_context));
+    IfJsrtErrorFailLogAndRetFalse(ChakraRTInterface::JsCreateContext(this->m_runtime, &this->m_context));
     IfJsrtErrorFailLogAndRetFalse(ChakraRTInterface::JsSetCurrentContext(m_context));
 
     JsValueRef globalFunc = JS_INVALID_REFERENCE;
@@ -312,9 +314,21 @@ bool Debugger::CallFunction(wchar_t const * functionName, JsValueRef * arguments
     return true;
 }
 
-void Debugger::StartDebugging(JsRuntimeHandle runtime)
+bool Debugger::StartDebugging(JsRuntimeHandle runtime)
 {
-    ChakraRTInterface::JsDiagStartDebugging(runtime, Debugger::JsDiagDebugEventHandler, this);
+    IfJsrtErrorFailLogAndRetFalse(ChakraRTInterface::JsDiagStartDebugging(runtime, Debugger::JsDiagDebugEventHandler, this));
+
+    return true;
+}
+
+bool Debugger::StopDebugging(JsRuntimeHandle runtime)
+{
+    void* callbackState = nullptr;
+    IfJsrtErrorFailLogAndRetFalse(ChakraRTInterface::JsDiagStopDebugging(runtime, &callbackState));
+
+    Assert(callbackState == this);
+
+    return true;
 }
 
 bool Debugger::HandleDebugEvent(JsDiagDebugEvent debugEvent, JsValueRef eventData)
@@ -435,4 +449,9 @@ void Debugger::CloseDebugger()
         delete Debugger::debugger;
         Debugger::debugger = nullptr;
     }
+}
+
+JsRuntimeHandle Debugger::GetRuntime()
+{
+    return Debugger::debugger != nullptr ? Debugger::debugger->m_runtime : JS_INVALID_RUNTIME_HANDLE;
 }

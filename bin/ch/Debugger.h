@@ -14,14 +14,17 @@ class Debugger
 public:
     static Debugger* GetDebugger(JsRuntimeHandle runtime);
     static void CloseDebugger();
-    void StartDebugging(JsRuntimeHandle runtime);
+    static JsRuntimeHandle GetRuntime();
+    bool StartDebugging(JsRuntimeHandle runtime);
+    bool StopDebugging(JsRuntimeHandle runtime);
     bool HandleDebugEvent(JsDiagDebugEvent debugEvent, JsValueRef eventData);
     bool VerifyAndWriteNewBaselineFile(LPCWSTR fileName);
     bool SourceRunDown();
 private:
-    Debugger();
+    Debugger(JsRuntimeHandle runtime);
     ~Debugger();
-    bool Initialize(JsRuntimeHandle runtime);
+    bool Initialize();
+    JsRuntimeHandle m_runtime;
     JsContextRef m_context;
     bool InstallDebugCallbacks(JsValueRef hostDebugObject);
     bool InstallHostCallback(JsValueRef hostDebugObject, const wchar_t *name, JsNativeFunction nativeFunction);

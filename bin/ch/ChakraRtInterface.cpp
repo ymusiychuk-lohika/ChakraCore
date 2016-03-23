@@ -90,6 +90,7 @@ HINSTANCE ChakraRTInterface::LoadChakraDll(ArgInfo& argInfo)
 
     m_jsApiHooks.pfJsParseScriptWithFlags = (JsAPIHooks::JsrtParseScriptWithFlags)GetProcAddress(library, "JsParseScriptWithFlags");
     m_jsApiHooks.pfJsrtDiagStartDebugging = (JsAPIHooks::JsrtDiagStartDebugging)GetProcAddress(library, "JsDiagStartDebugging");
+    m_jsApiHooks.pfJsrtDiagStopDebugging = (JsAPIHooks::JsrtDiagStopDebugging)GetProcAddress(library, "JsDiagStopDebugging");
     m_jsApiHooks.pfJsrtDiagGetSource = (JsAPIHooks::JsrtDiagGetSource)GetProcAddress(library, "JsDiagGetSource");
     m_jsApiHooks.pfJsrtDiagSetBreakpoint = (JsAPIHooks::JsrtDiagSetBreakpoint)GetProcAddress(library, "JsDiagSetBreakpoint");
     m_jsApiHooks.pfJsrtDiagGetStackTrace = (JsAPIHooks::JsrtDiagGetStackTrace)GetProcAddress(library, "JsDiagGetStackTrace");

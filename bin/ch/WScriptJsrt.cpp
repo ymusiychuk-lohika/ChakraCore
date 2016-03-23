@@ -450,11 +450,50 @@ JsValueRef WScriptJsrt::AttachCallback(JsValueRef callee, bool isConstructCall, 
         ChakraRTInterface::JsGetCurrentContext(&currentContext);
         JsRuntimeHandle currentRuntime = JS_INVALID_RUNTIME_HANDLE;
         ChakraRTInterface::JsGetRuntime(currentContext, &currentRuntime);
-        if (Debugger::debugger == nullptr)
+
+        Debugger* debugger = Debugger::GetDebugger(currentRuntime);
+        debugger->StartDebugging(currentRuntime);
+        debugger->SourceRunDown();
+
+        return msg.CallFunction(L"");
+    });
+Error:
+    JsValueRef errorObject;
+    JsValueRef errorMessageString;
+    JsErrorCode errorCode = ChakraRTInterface::JsPointerToString(errorMessage, wcslen(errorMessage), &errorMessageString);
+    if (errorCode != JsNoError)
+    {
+        errorCode = ChakraRTInterface::JsCreateError(errorMessageString, &errorObject);
+        if (errorCode != JsNoError)
+        {
+            ChakraRTInterface::JsSetException(errorObject);
+        }
+    }
+    return JS_INVALID_REFERENCE;
+}
+JsValueRef WScriptJsrt::DetachCallback(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState)
+{
+    LPWSTR errorMessage = L"WScript.Detach requires a function, like WScript.Detach(foo);";
+    if (argumentCount != 2)
+    {
+        goto Error;
+    }
+    JsValueType argumentType = JsUndefined;
+    IfJsrtError(ChakraRTInterface::JsGetValueType(arguments[1], &argumentType));
+    if (argumentType != JsFunction)
+    {
+        goto Error;
+    }
+    QueueDebugOperation(arguments[1], [=](WScriptJsrt::CallbackMessage& msg)
+    {
+        JsContextRef currentContext = JS_INVALID_REFERENCE;
+        ChakraRTInterface::JsGetCurrentContext(&currentContext);
+        JsRuntimeHandle currentRuntime = JS_INVALID_RUNTIME_HANDLE;
+        ChakraRTInterface::JsGetRuntime(currentContext, &currentRuntime);
+        if (Debugger::debugger != nullptr)
         {
             Debugger* debugger = Debugger::GetDebugger(currentRuntime);
-            debugger->StartDebugging(currentRuntime);
-            debugger->SourceRunDown();
+            debugger->StopDebugging(currentRuntime);
         }
         return msg.CallFunction(L"");
     });
@@ -510,8 +549,9 @@ bool WScriptJsrt::Initialize()
     IfFalseGo(WScriptJsrt::InstallObjectsOnObject(wscript, L"Attach", AttachCallback));
     IfFalseGo(WScriptJsrt::InstallObjectsOnObject(wscript, L"SetTimeout", SetTimeoutCallback));
     IfFalseGo(WScriptJsrt::InstallObjectsOnObject(wscript, L"SetTimeout", SetTimeoutCallback));
+    IfFalseGo(WScriptJsrt::InstallObjectsOnObject(wscript, L"Detach", DetachCallback));
 
-    IfFalseGo(WScriptJsrt::InstallObjectsOnObject(wscript, L"Detach", EmptyCallback));
+    // ToDo Remove
     IfFalseGo(WScriptJsrt::InstallObjectsOnObject(wscript, L"Edit", EmptyCallback));
 
     JsValueRef argsObject;
