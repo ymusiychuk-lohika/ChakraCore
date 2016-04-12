@@ -20,7 +20,7 @@
         return JsErrorDiagNotAtBreak; \
     }
 
-STDAPI_(JsErrorCode) JsDiagStartDebugging(
+CHAKRA_API JsDiagStartDebugging(
     _In_ JsRuntimeHandle runtimeHandle,
     _In_ JsDiagDebugEventCallback debugEventCallback,
     _In_opt_ void* callbackState)
@@ -98,8 +98,7 @@ STDAPI_(JsErrorCode) JsDiagStartDebugging(
     });
 }
 
-STDAPI_(JsErrorCode)
-JsDiagStopDebugging(
+CHAKRA_API JsDiagStopDebugging(
     _In_ JsRuntimeHandle runtimeHandle,
     _Out_ void** callbackState)
 {
@@ -165,8 +164,7 @@ JsDiagStopDebugging(
     });
 }
 
-STDAPI_(JsErrorCode)
-JsDiagGetScripts(
+CHAKRA_API JsDiagGetScripts(
     _Out_ JsValueRef *scriptsArray)
 {
     return ContextAPIWrapper<false>([&](Js::ScriptContext *scriptContext) -> JsErrorCode {
@@ -195,8 +193,7 @@ JsDiagGetScripts(
 }
 
 
-STDAPI_(JsErrorCode)
-JsDiagGetSource(
+CHAKRA_API JsDiagGetSource(
     _In_ unsigned int scriptId,
     _Out_ JsValueRef *source)
 {
@@ -225,8 +222,7 @@ JsDiagGetSource(
 }
 
 
-STDAPI_(JsErrorCode)
-JsDiagRequestAsyncBreak(
+CHAKRA_API JsDiagRequestAsyncBreak(
     _In_ JsRuntimeHandle runtimeHandle)
 {
     return GlobalAPIWrapper([&]() -> JsErrorCode {
@@ -251,8 +247,7 @@ JsDiagRequestAsyncBreak(
 }
 
 
-STDAPI_(JsErrorCode)
-JsDiagGetBreakpoints(
+CHAKRA_API JsDiagGetBreakpoints(
     _Out_ JsValueRef *breakpoints)
 {
     return GlobalAPIWrapper([&]() -> JsErrorCode {
@@ -289,8 +284,7 @@ JsDiagGetBreakpoints(
     });
 }
 
-STDAPI_(JsErrorCode)
-JsDiagSetBreakpoint(
+CHAKRA_API JsDiagSetBreakpoint(
     _In_ unsigned int scriptId,
     _In_ unsigned int lineNumber,
     _In_ unsigned int columnNumber,
@@ -354,8 +348,7 @@ JsDiagSetBreakpoint(
 }
 
 
-STDAPI_(JsErrorCode)
-JsDiagRemoveBreakpoint(
+CHAKRA_API JsDiagRemoveBreakpoint(
     _In_ unsigned int breakpointId)
 {
     return GlobalAPIWrapper([&]() -> JsErrorCode {
@@ -384,8 +377,7 @@ JsDiagRemoveBreakpoint(
     });
 }
 
-STDAPI_(JsErrorCode)
-JsDiagSetBreakOnException(
+CHAKRA_API JsDiagSetBreakOnException(
     _In_ JsRuntimeHandle runtimeHandle,
     _In_ JsDiagBreakOnExceptionAttributes exceptionAttributes)
 {
@@ -405,8 +397,7 @@ JsDiagSetBreakOnException(
     });
 }
 
-STDAPI_(JsErrorCode)
-JsDiagGetBreakOnException(
+CHAKRA_API JsDiagGetBreakOnException(
     _In_ JsRuntimeHandle runtimeHandle,
     _Out_ JsDiagBreakOnExceptionAttributes* exceptionAttributes)
 {
@@ -428,8 +419,7 @@ JsDiagGetBreakOnException(
     });
 }
 
-STDAPI_(JsErrorCode)
-JsDiagSetStepType(
+CHAKRA_API JsDiagSetStepType(
     _In_ JsDiagStepType stepType)
 {
     return ContextAPIWrapper<true>([&](Js::ScriptContext * scriptContext) -> JsErrorCode {
@@ -460,8 +450,7 @@ JsDiagSetStepType(
     });
 }
 
-STDAPI_(JsErrorCode)
-JsDiagGetFunctionPosition(
+CHAKRA_API JsDiagGetFunctionPosition(
     _In_ JsValueRef function,
     _Out_ JsValueRef *functionInfo)
 {
@@ -516,8 +505,7 @@ JsDiagGetFunctionPosition(
 }
 
 
-STDAPI_(JsErrorCode)
-JsDiagGetStackTrace(
+CHAKRA_API JsDiagGetStackTrace(
     _Out_ JsValueRef *stackTrace)
 {
     return ContextAPIWrapper<false>([&](Js::ScriptContext *scriptContext) -> JsErrorCode {
@@ -541,8 +529,7 @@ JsDiagGetStackTrace(
 }
 
 
-STDAPI_(JsErrorCode)
-JsDiagGetStackProperties(
+CHAKRA_API JsDiagGetStackProperties(
     _In_ unsigned int stackFrameIndex,
     _Out_ JsValueRef *properties)
 {
@@ -577,8 +564,7 @@ JsDiagGetStackProperties(
     });
 }
 
-STDAPI_(JsErrorCode)
-JsDiagGetProperties(
+CHAKRA_API JsDiagGetProperties(
     _In_ unsigned int objectHandle,
     _In_ unsigned int fromCount,
     _In_ unsigned int totalCount,
@@ -617,8 +603,7 @@ JsDiagGetProperties(
 }
 
 
-STDAPI_(JsErrorCode)
-JsDiagGetObjectFromHandle(
+CHAKRA_API JsDiagGetObjectFromHandle(
     _In_ unsigned int objectHandle,
     _Out_ JsValueRef *handleObject)
 {
@@ -654,8 +639,7 @@ JsDiagGetObjectFromHandle(
     });
 }
 
-STDAPI_(JsErrorCode)
-JsDiagEvaluate(
+CHAKRA_API JsDiagEvaluate(
     _In_ const wchar_t *expression,
     _In_ unsigned int stackFrameIndex,
     _Out_ JsValueRef *evalResult)
