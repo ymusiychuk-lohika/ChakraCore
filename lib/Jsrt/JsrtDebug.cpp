@@ -132,7 +132,7 @@ bool JsrtDebug::IsInClosedState()
 
 bool JsrtDebug::IsExceptionReportingEnabled()
 {
-    return (this->GetBreakOnException() & JsDiagBreakOnExceptionAttributeNone) != JsDiagBreakOnExceptionAttributeNone;
+    return this->GetBreakOnException() != JsDiagBreakOnExceptionAttributeNone;
 }
 
 bool JsrtDebug::IsFirstChanceExceptionEnabled()
@@ -413,8 +413,6 @@ void JsrtDebug::CallDebugEventCallbackForBreak(JsDiagDebugEvent debugEvent, Js::
 
 Js::DynamicObject * JsrtDebug::GetScript(Js::Utf8SourceInfo * utf8SourceInfo)
 {
-    Assert(utf8SourceInfo->HasDebugDocument());
-
     Js::DynamicObject* scriptObject = utf8SourceInfo->GetScriptContext()->GetLibrary()->CreateObject();
 
     JsrtDebugUtils::AddScriptIdToObject(scriptObject, utf8SourceInfo);
@@ -438,7 +436,7 @@ Js::JavascriptArray * JsrtDebug::GetScripts(Js::ScriptContext* scriptContext)
         tempScriptContext->GetSourceList()->Map([&](int i, RecyclerWeakReference<Js::Utf8SourceInfo>* utf8SourceInfoWeakRef)
         {
             Js::Utf8SourceInfo* utf8SourceInfo = utf8SourceInfoWeakRef->Get();
-            if (utf8SourceInfo != nullptr && !utf8SourceInfo->GetIsLibraryCode())
+            if (utf8SourceInfo != nullptr && !utf8SourceInfo->GetIsLibraryCode() && utf8SourceInfo->HasDebugDocument())
             {
                 bool isCallerLibraryCode = false;
 

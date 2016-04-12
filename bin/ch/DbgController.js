@@ -264,19 +264,19 @@ var controllerObj = (function () {
                         //   exception(uncaught)
                         //   exception(all)
                         if (isExceptionBreakpoint) {
-                            var exceptionType = -1;
+                            var exceptionAttributes = -1;
                             if (bpName !== undefined) {
                                 if (bpName == "none") {
-                                    exceptionType = 0; // JsDiagBreakOnExceptionTypeNone
+                                    exceptionAttributes = 0; // JsDiagBreakOnExceptionAttributeNone
                                 } else if (bpName == "uncaught") {
-                                    exceptionType = 1; // JsDiagBreakOnExceptionTypeUncaught
+                                    exceptionAttributes = 0x2; // JsDiagBreakOnExceptionAttributeFirstChance
                                 } else if (bpName == "all") {
-                                    exceptionType = 2; // JsDiagBreakOnExceptionTypeAll
+                                    exceptionAttributes = 0x1 | 0x2; // JsDiagBreakOnExceptionAttributeUncaught | JsDiagBreakOnExceptionAttributeFirstChance
                                 }
                             } else {
                                 // throw "No exception type specified";
                             }
-                            callHostFunction(hostDebugObject.JsDiagSetBreakOnException, exceptionType);
+                            callHostFunction(hostDebugObject.JsDiagSetBreakOnException, exceptionAttributes);
                         }
 
                         // Parse the breakpoint execution string

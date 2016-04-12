@@ -220,7 +220,7 @@ bool Debugger::Initialize()
 
     JsValueRef globalFunc = JS_INVALID_REFERENCE;
 
-    IfJsrtErrorFailLogAndRetFalse(ChakraRTInterface::JsParseScriptWithFlags(controllerScript, JS_SOURCE_CONTEXT_NONE, _u("DbgController.js"), JsParseScriptAttributeLibraryCode, &globalFunc));
+    IfJsrtErrorFailLogAndRetFalse(ChakraRTInterface::JsParseScriptWithAttributes(controllerScript, JS_SOURCE_CONTEXT_NONE, _u("DbgController.js"), JsParseScriptAttributeLibraryCode, &globalFunc));
 
     JsValueRef undefinedValue;
     IfJsrtErrorFailLogAndRetFalse(ChakraRTInterface::JsGetUndefinedValue(&undefinedValue));
