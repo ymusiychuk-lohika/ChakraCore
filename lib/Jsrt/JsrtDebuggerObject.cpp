@@ -5,7 +5,7 @@
 #include "JsrtPch.h"
 #include "JsrtDebuggerObject.h"
 #include "JsrtDebugUtils.h"
-#include "JsrtDebug.h"
+#include "JsrtDebugManager.h"
 
 DebuggerObjectBase::DebuggerObjectBase(DebuggerObjectType type, DebuggerObjectsManager* debuggerObjectsManager) :
     type(type),
@@ -105,13 +105,13 @@ Js::DynamicObject * DebuggerObjectBase::GetChildrens(WeakArenaReference<Js::IDia
     return childrensObject;
 }
 
-DebuggerObjectsManager::DebuggerObjectsManager(JsrtDebug* debugObject) :
+DebuggerObjectsManager::DebuggerObjectsManager(JsrtDebugManager* jsrtDebugManager) :
     handleId(0),
-    debugObject(debugObject),
+    jsrtDebugManager(jsrtDebugManager),
     handleToDebuggerObjectsDictionary(nullptr),
     dataToDebuggerObjectsDictionary(nullptr)
 {
-    Assert(debugObject != nullptr);
+    Assert(jsrtDebugManager != nullptr);
 }
 
 DebuggerObjectsManager::~DebuggerObjectsManager()
@@ -153,7 +153,7 @@ void DebuggerObjectsManager::ClearAll()
 
 ArenaAllocator * DebuggerObjectsManager::GetDebugObjectArena()
 {
-    return this->GetDebugObject()->GetDebugObjectArena();
+    return this->GetJsrtDebugManager()->GetDebugObjectArena();
 }
 
 bool DebuggerObjectsManager::TryGetDebuggerObjectFromHandle(uint handle, DebuggerObjectBase ** debuggerObject)
@@ -791,12 +791,12 @@ Js::DynamicObject * DebuggerObjectGlobalsNode::GetChildrens(Js::ScriptContext * 
     return childrens;
 }
 
-JsrtDebugStackFrames::JsrtDebugStackFrames(JsrtDebug* debugObject):
+JsrtDebugStackFrames::JsrtDebugStackFrames(JsrtDebugManager* jsrtDebugManager):
     stackTraceArray(nullptr),
     framesDictionary(nullptr)
 {
-    Assert(debugObject != nullptr);
-    this->debugObject = debugObject;
+    Assert(jsrtDebugManager != nullptr);
+    this->jsrtDebugManager = jsrtDebugManager;
 }
 
 JsrtDebugStackFrames::~JsrtDebugStackFrames()
@@ -806,7 +806,7 @@ JsrtDebugStackFrames::~JsrtDebugStackFrames()
     if (this->framesDictionary != nullptr)
     {
         this->framesDictionary->Map([this](uint handle, DebuggerStackFrame* debuggerStackFrame) {
-            Adelete(this->debugObject->GetDebugObjectArena(), debuggerStackFrame);
+            Adelete(this->jsrtDebugManager->GetDebugObjectArena(), debuggerStackFrame);
         });
         this->framesDictionary->Clear();
         this->framesDictionary = nullptr;
@@ -824,7 +824,7 @@ Js::JavascriptArray * JsrtDebugStackFrames::StackFrames(Js::ScriptContext * scri
 
     Assert(this->framesDictionary == nullptr);
 
-    this->framesDictionary = Anew(this->debugObject->GetDebugObjectArena(), FramesDictionary, this->debugObject->GetDebugObjectArena(), 10);
+    this->framesDictionary = Anew(this->jsrtDebugManager->GetDebugObjectArena(), FramesDictionary, this->jsrtDebugManager->GetDebugObjectArena(), 10);
 
     uint frameCount = 0;
 
@@ -868,7 +868,7 @@ bool JsrtDebugStackFrames::TryGetFrameObjectFromFrameIndex(uint frameIndex, Debu
 
 Js::DynamicObject * JsrtDebugStackFrames::GetStackFrame(Js::DiagStackFrame * stackFrame, uint frameIndex)
 {
-    DebuggerStackFrame* debuggerStackFrame = Anew(this->debugObject->GetDebugObjectArena(), DebuggerStackFrame, this->debugObject->GetDebuggerObjectsManager(), stackFrame, frameIndex);
+    DebuggerStackFrame* debuggerStackFrame = Anew(this->jsrtDebugManager->GetDebugObjectArena(), DebuggerStackFrame, this->jsrtDebugManager->GetDebuggerObjectsManager(), stackFrame, frameIndex);
 
     Assert(this->framesDictionary != nullptr);
 

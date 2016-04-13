@@ -26,11 +26,11 @@ Js::DynamicObject* JsrtDebugEventObject::GetEventDataObject()
     return this->eventDataObject;
 }
 
-DebugDocumentManager::DebugDocumentManager(JsrtDebug* debugObject) :
+DebugDocumentManager::DebugDocumentManager(JsrtDebugManager* jsrtDebugManager) :
     breakpointDebugDocumentDictionary(nullptr)
 {
-    Assert(debugObject != nullptr);
-    this->debugObject = debugObject;
+    Assert(jsrtDebugManager != nullptr);
+    this->jsrtDebugManager = jsrtDebugManager;
 }
 
 DebugDocumentManager::~DebugDocumentManager()
@@ -39,11 +39,11 @@ DebugDocumentManager::~DebugDocumentManager()
     {
         AssertMsg(this->breakpointDebugDocumentDictionary->Count() == 0, "Should have cleared all entries by now?");
 
-        Adelete(this->debugObject->GetDebugObjectArena(), this->breakpointDebugDocumentDictionary);
+        Adelete(this->jsrtDebugManager->GetDebugObjectArena(), this->breakpointDebugDocumentDictionary);
 
         this->breakpointDebugDocumentDictionary = nullptr;
     }
-    this->debugObject = nullptr;
+    this->jsrtDebugManager = nullptr;
 }
 
 void DebugDocumentManager::AddDocument(UINT bpId, Js::DebugDocument * debugDocument)
@@ -118,7 +118,7 @@ DebugDocumentManager::BreakpointDebugDocumentDictionary * DebugDocumentManager::
 {
     if (this->breakpointDebugDocumentDictionary == nullptr)
     {
-        this->breakpointDebugDocumentDictionary = Anew(this->debugObject->GetDebugObjectArena(), BreakpointDebugDocumentDictionary, this->debugObject->GetDebugObjectArena(), 10);
+        this->breakpointDebugDocumentDictionary = Anew(this->jsrtDebugManager->GetDebugObjectArena(), BreakpointDebugDocumentDictionary, this->jsrtDebugManager->GetDebugObjectArena(), 10);
     }
     return breakpointDebugDocumentDictionary;
 }

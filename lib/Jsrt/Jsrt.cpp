@@ -238,16 +238,16 @@ CHAKRA_API JsDisposeRuntime(_In_ JsRuntimeHandle runtimeHandle)
             }
         }
 
-        if (runtime->GetDebugObject() != nullptr)
+        if (runtime->GetJsrtDebugManager() != nullptr)
         {
-            runtime->GetDebugObject()->ClearDebuggerObjects();
+            runtime->GetJsrtDebugManager()->ClearDebuggerObjects();
         }
 
         // Close any open Contexts.
         // We need to do this before recycler shutdown, because ScriptEngine->Close won't work then.
         runtime->CloseContexts();
 
-        runtime->ClearDebugObject();
+        runtime->ClearJsrtDebugManager();
 
 #if defined(CHECK_MEMORY_LEAK) || defined(LEAK_REPORT)
         bool doFinalGC = false;
@@ -458,19 +458,19 @@ CHAKRA_API JsCreateContext(_In_ JsRuntimeHandle runtimeHandle, _Out_ JsContextRe
 
         JsrtContext * context = JsrtContext::New(runtime);
 
-        JsrtDebug* debugObject = runtime->GetDebugObject();
+        JsrtDebugManager* jsrtDebugManager = runtime->GetJsrtDebugManager();
 
-        if (debugObject != nullptr)
+        if (jsrtDebugManager != nullptr)
         {
             Js::ScriptContext* scriptContext = context->GetScriptContext();
             scriptContext->InitializeDebugging();
 
             Js::DebugContext* debugContext = scriptContext->GetDebugContext();
-            debugContext->SetHostDebugContext(debugObject);
+            debugContext->SetHostDebugContext(jsrtDebugManager);
 
             Js::ProbeContainer* probeContainer = debugContext->GetProbeContainer();
-            probeContainer->InitializeInlineBreakEngine(debugObject);
-            probeContainer->InitializeDebuggerScriptOptionCallback(debugObject);
+            probeContainer->InitializeInlineBreakEngine(jsrtDebugManager);
+            probeContainer->InitializeDebuggerScriptOptionCallback(jsrtDebugManager);
 
             threadContext->GetDebugManager()->SetLocalsDisplayFlags(Js::DebugManager::LocalsDisplayFlags::LocalsDisplayFlags_NoGroupMethods);
         }

@@ -3,7 +3,7 @@
 //----------------------------------------------------------------------------
 
 #include "JsrtPch.h"
-#include "jsrtInternal.h"
+#include "JsrtInternal.h"
 #include "RuntimeDebugPch.h"
 #include "ThreadContextTLSEntry.h"
 #include "JsrtDebugUtils.h"
@@ -46,7 +46,7 @@ CHAKRA_API JsDiagStartDebugging(
         {
             return JsErrorRuntimeInUse;
         }
-        else if (runtime->GetDebugObject() != nullptr && runtime->GetDebugObject()->IsDebugEventCallbackSet())
+        else if (runtime->GetJsrtDebugManager() != nullptr && runtime->GetJsrtDebugManager()->IsDebugEventCallbackSet())
         {
             return JsErrorDiagAlreadyInDebugMode;
         }
@@ -59,11 +59,11 @@ CHAKRA_API JsDiagStartDebugging(
         }
 
         // Create the debug object to save callback function and data
-        runtime->EnsureDebugObject();
+        runtime->EnsureJsrtDebugManager();
 
-        JsrtDebug* debugObject = runtime->GetDebugObject();
+        JsrtDebugManager* jsrtDebugManager = runtime->GetJsrtDebugManager();
 
-        debugObject->SetDebugEventCallback(debugEventCallback, callbackState);
+        jsrtDebugManager->SetDebugEventCallback(debugEventCallback, callbackState);
 
         if (threadContext->GetDebugManager() != nullptr)
         {
@@ -80,7 +80,7 @@ CHAKRA_API JsDiagStartDebugging(
 
             if (debugContext->GetHostDebugContext() == nullptr)
             {
-                debugContext->SetHostDebugContext(debugObject);
+                debugContext->SetHostDebugContext(jsrtDebugManager);
             }
 
             if (FAILED(scriptContext->OnDebuggerAttached()))
@@ -90,8 +90,8 @@ CHAKRA_API JsDiagStartDebugging(
             }
 
             Js::ProbeContainer* probeContainer = debugContext->GetProbeContainer();
-            probeContainer->InitializeInlineBreakEngine(debugObject);
-            probeContainer->InitializeDebuggerScriptOptionCallback(debugObject);
+            probeContainer->InitializeInlineBreakEngine(jsrtDebugManager);
+            probeContainer->InitializeDebuggerScriptOptionCallback(jsrtDebugManager);
         }
 
         return JsNoError;
@@ -133,9 +133,9 @@ CHAKRA_API JsDiagStopDebugging(
             return JsErrorWrongThread;
         }
 
-        JsrtDebug* debugObject = runtime->GetDebugObject();
+        JsrtDebugManager* jsrtDebugManager = runtime->GetJsrtDebugManager();
 
-        VALIDATE_IS_DEBUGGING(debugObject);
+        VALIDATE_IS_DEBUGGING(jsrtDebugManager);
 
         for (Js::ScriptContext *scriptContext = runtime->GetThreadContext()->GetScriptContextList();
         scriptContext != nullptr && !scriptContext->IsClosed();
@@ -155,10 +155,10 @@ CHAKRA_API JsDiagStopDebugging(
             probeContainer->UninstallInlineBreakpointProbe(nullptr);
             probeContainer->UninstallDebuggerScriptOptionCallback();
 
-            debugObject->ClearBreakpointDebugDocumentDictionary();
+            jsrtDebugManager->ClearBreakpointDebugDocumentDictionary();
         }
 
-        *callbackState = debugObject->GetAndClearCallback();
+        *callbackState = jsrtDebugManager->GetAndClearCallback();
 
         return JsNoError;
     });
@@ -175,11 +175,11 @@ CHAKRA_API JsDiagGetScripts(
 
         JsrtContext *currentContext = JsrtContext::GetCurrent();
 
-        JsrtDebug* debugObject = currentContext->GetRuntime()->GetDebugObject();
+        JsrtDebugManager* jsrtDebugManager = currentContext->GetRuntime()->GetJsrtDebugManager();
 
-        VALIDATE_IS_DEBUGGING(debugObject);
+        VALIDATE_IS_DEBUGGING(jsrtDebugManager);
 
-        Js::JavascriptArray* scripts = debugObject->GetScripts(scriptContext);
+        Js::JavascriptArray* scripts = jsrtDebugManager->GetScripts(scriptContext);
 
         if (scripts == nullptr)
         {
@@ -205,11 +205,11 @@ CHAKRA_API JsDiagGetSource(
 
         JsrtContext *currentContext = JsrtContext::GetCurrent();
 
-        JsrtDebug* debugObject = currentContext->GetRuntime()->GetDebugObject();
+        JsrtDebugManager* jsrtDebugManager = currentContext->GetRuntime()->GetJsrtDebugManager();
 
-        VALIDATE_IS_DEBUGGING(debugObject);
+        VALIDATE_IS_DEBUGGING(jsrtDebugManager);
 
-        Js::DynamicObject* sourceObject = debugObject->GetSource(scriptId);
+        Js::DynamicObject* sourceObject = jsrtDebugManager->GetSource(scriptId);
         if (sourceObject == nullptr)
         {
             return JsErrorInvalidArgument;
@@ -231,15 +231,15 @@ CHAKRA_API JsDiagRequestAsyncBreak(
 
         JsrtRuntime * runtime = JsrtRuntime::FromHandle(runtimeHandle);
 
-        JsrtDebug* debugObject = runtime->GetDebugObject();
+        JsrtDebugManager* jsrtDebugManager = runtime->GetJsrtDebugManager();
 
-        VALIDATE_IS_DEBUGGING(debugObject);
+        VALIDATE_IS_DEBUGGING(jsrtDebugManager);
 
         for (Js::ScriptContext *scriptContext = runtime->GetThreadContext()->GetScriptContextList();
         scriptContext != nullptr && !scriptContext->IsClosed();
             scriptContext = scriptContext->next)
         {
-            debugObject->EnableAsyncBreak(scriptContext);
+            jsrtDebugManager->EnableAsyncBreak(scriptContext);
         }
 
         return JsNoError;
@@ -267,15 +267,15 @@ CHAKRA_API JsDiagGetBreakpoints(
             return JsErrorWrongThread;
         }
 
-        JsrtDebug* debugObject = runtime->GetDebugObject();
+        JsrtDebugManager* jsrtDebugManager = runtime->GetJsrtDebugManager();
 
-        VALIDATE_IS_DEBUGGING(debugObject);
+        VALIDATE_IS_DEBUGGING(jsrtDebugManager);
 
         for (Js::ScriptContext *scriptContext = runtime->GetThreadContext()->GetScriptContextList();
         scriptContext != nullptr && !scriptContext->IsClosed();
             scriptContext = scriptContext->next)
         {
-            debugObject->GetBreakpoints(&bpsArray, scriptContext);
+            jsrtDebugManager->GetBreakpoints(&bpsArray, scriptContext);
         }
 
         *breakpoints = bpsArray;
@@ -307,7 +307,7 @@ CHAKRA_API JsDiagSetBreakpoint(
             return JsErrorWrongThread;
         }
 
-        VALIDATE_IS_DEBUGGING(runtime->GetDebugObject());
+        VALIDATE_IS_DEBUGGING(runtime->GetJsrtDebugManager());
 
         Js::Utf8SourceInfo* utf8SourceInfo = nullptr;
 
@@ -329,9 +329,9 @@ CHAKRA_API JsDiagSetBreakpoint(
 
         if (utf8SourceInfo != nullptr && utf8SourceInfo->HasDebugDocument())
         {
-            JsrtDebug* debugObject = runtime->GetDebugObject();
+            JsrtDebugManager* jsrtDebugManager = runtime->GetJsrtDebugManager();
 
-            Js::DynamicObject* bpObject = debugObject->SetBreakPoint(utf8SourceInfo, lineNumber, columnNumber);
+            Js::DynamicObject* bpObject = jsrtDebugManager->SetBreakPoint(utf8SourceInfo, lineNumber, columnNumber);
 
             if(bpObject != nullptr)
             {
@@ -364,11 +364,11 @@ CHAKRA_API JsDiagRemoveBreakpoint(
             return JsErrorWrongThread;
         }
 
-        JsrtDebug* debugObject = runtime->GetDebugObject();
+        JsrtDebugManager* jsrtDebugManager = runtime->GetJsrtDebugManager();
 
-        VALIDATE_IS_DEBUGGING(debugObject);
+        VALIDATE_IS_DEBUGGING(jsrtDebugManager);
 
-        if (!debugObject->RemoveBreakpoint(breakpointId))
+        if (!jsrtDebugManager->RemoveBreakpoint(breakpointId))
         {
             return JsErrorInvalidArgument;
         }
@@ -387,11 +387,11 @@ CHAKRA_API JsDiagSetBreakOnException(
 
         JsrtRuntime * runtime = JsrtRuntime::FromHandle(runtimeHandle);
 
-        JsrtDebug* debugObject = runtime->GetDebugObject();
+        JsrtDebugManager* jsrtDebugManager = runtime->GetJsrtDebugManager();
 
-        VALIDATE_IS_DEBUGGING(debugObject);
+        VALIDATE_IS_DEBUGGING(jsrtDebugManager);
 
-        debugObject->SetBreakOnException(exceptionAttributes);
+        jsrtDebugManager->SetBreakOnException(exceptionAttributes);
 
         return JsNoError;
     });
@@ -409,11 +409,11 @@ CHAKRA_API JsDiagGetBreakOnException(
 
         JsrtRuntime * runtime = JsrtRuntime::FromHandle(runtimeHandle);
 
-        JsrtDebug* debugObject = runtime->GetDebugObject();
+        JsrtDebugManager* jsrtDebugManager = runtime->GetJsrtDebugManager();
 
-        VALIDATE_IS_DEBUGGING(debugObject);
+        VALIDATE_IS_DEBUGGING(jsrtDebugManager);
 
-        *exceptionAttributes = debugObject->GetBreakOnException();
+        *exceptionAttributes = jsrtDebugManager->GetBreakOnException();
 
         return JsNoError;
     });
@@ -429,21 +429,21 @@ CHAKRA_API JsDiagSetStepType(
 
         VALIDATE_RUNTIME_IS_AT_BREAK(runtime);
 
-        JsrtDebug* debugObject = runtime->GetDebugObject();
+        JsrtDebugManager* jsrtDebugManager = runtime->GetJsrtDebugManager();
 
-        VALIDATE_IS_DEBUGGING(debugObject);
+        VALIDATE_IS_DEBUGGING(jsrtDebugManager);
 
         if (stepType == JsDiagStepTypeStepIn)
         {
-            debugObject->SetResumeType(BREAKRESUMEACTION_STEP_INTO);
+            jsrtDebugManager->SetResumeType(BREAKRESUMEACTION_STEP_INTO);
         }
         else if (stepType == JsDiagStepTypeStepOut)
         {
-            debugObject->SetResumeType(BREAKRESUMEACTION_STEP_OUT);
+            jsrtDebugManager->SetResumeType(BREAKRESUMEACTION_STEP_OUT);
         }
         else if (stepType == JsDiagStepTypeStepOver)
         {
-            debugObject->SetResumeType(BREAKRESUMEACTION_STEP_OVER);
+            jsrtDebugManager->SetResumeType(BREAKRESUMEACTION_STEP_OVER);
         }
 
         return JsNoError;
@@ -518,11 +518,11 @@ CHAKRA_API JsDiagGetStackTrace(
 
         VALIDATE_RUNTIME_IS_AT_BREAK(runtime);
 
-        JsrtDebug* debugObject = runtime->GetDebugObject();
+        JsrtDebugManager* jsrtDebugManager = runtime->GetJsrtDebugManager();
 
-        VALIDATE_IS_DEBUGGING(debugObject);
+        VALIDATE_IS_DEBUGGING(jsrtDebugManager);
 
-        *stackTrace = debugObject->GetStackFrames(scriptContext);
+        *stackTrace = jsrtDebugManager->GetStackFrames(scriptContext);
 
         return JsNoError;
     });
@@ -543,12 +543,12 @@ CHAKRA_API JsDiagGetStackProperties(
 
         VALIDATE_RUNTIME_IS_AT_BREAK(runtime);
 
-        JsrtDebug* debugObject = runtime->GetDebugObject();
+        JsrtDebugManager* jsrtDebugManager = runtime->GetJsrtDebugManager();
 
-        VALIDATE_IS_DEBUGGING(debugObject);
+        VALIDATE_IS_DEBUGGING(jsrtDebugManager);
 
         DebuggerStackFrame* debuggerStackFrame = nullptr;
-        if (!debugObject->TryGetFrameObjectFromFrameIndex(scriptContext, stackFrameIndex, &debuggerStackFrame))
+        if (!jsrtDebugManager->TryGetFrameObjectFromFrameIndex(scriptContext, stackFrameIndex, &debuggerStackFrame))
         {
             return JsErrorDiagObjectNotFound;
         }
@@ -581,12 +581,12 @@ CHAKRA_API JsDiagGetProperties(
 
         VALIDATE_RUNTIME_IS_AT_BREAK(runtime);
 
-        JsrtDebug* debugObject = runtime->GetDebugObject();
+        JsrtDebugManager* jsrtDebugManager = runtime->GetJsrtDebugManager();
 
-        VALIDATE_IS_DEBUGGING(debugObject);
+        VALIDATE_IS_DEBUGGING(jsrtDebugManager);
 
         DebuggerObjectBase* debuggerObject = nullptr;
-        if (!debugObject->GetDebuggerObjectsManager()->TryGetDebuggerObjectFromHandle(objectHandle, &debuggerObject) || debuggerObject == nullptr)
+        if (!jsrtDebugManager->GetDebuggerObjectsManager()->TryGetDebuggerObjectFromHandle(objectHandle, &debuggerObject) || debuggerObject == nullptr)
         {
             return JsErrorDiagInvalidHandle;
         }
@@ -617,12 +617,12 @@ CHAKRA_API JsDiagGetObjectFromHandle(
 
         VALIDATE_RUNTIME_IS_AT_BREAK(runtime);
 
-        JsrtDebug* debugObject = runtime->GetDebugObject();
+        JsrtDebugManager* jsrtDebugManager = runtime->GetJsrtDebugManager();
 
-        VALIDATE_IS_DEBUGGING(debugObject);
+        VALIDATE_IS_DEBUGGING(jsrtDebugManager);
 
         DebuggerObjectBase* debuggerObject = nullptr;
-        if (!debugObject->GetDebuggerObjectsManager()->TryGetDebuggerObjectFromHandle(objectHandle, &debuggerObject) || debuggerObject == nullptr)
+        if (!jsrtDebugManager->GetDebuggerObjectsManager()->TryGetDebuggerObjectFromHandle(objectHandle, &debuggerObject) || debuggerObject == nullptr)
         {
             return JsErrorDiagInvalidHandle;
         }
@@ -656,12 +656,12 @@ CHAKRA_API JsDiagEvaluate(
 
         VALIDATE_RUNTIME_IS_AT_BREAK(runtime);
 
-        JsrtDebug* debugObject = runtime->GetDebugObject();
+        JsrtDebugManager* jsrtDebugManager = runtime->GetJsrtDebugManager();
 
-        VALIDATE_IS_DEBUGGING(debugObject);
+        VALIDATE_IS_DEBUGGING(jsrtDebugManager);
 
         DebuggerStackFrame* debuggerStackFrame = nullptr;
-        if (!debugObject->TryGetFrameObjectFromFrameIndex(scriptContext, stackFrameIndex, &debuggerStackFrame))
+        if (!jsrtDebugManager->TryGetFrameObjectFromFrameIndex(scriptContext, stackFrameIndex, &debuggerStackFrame))
         {
             return JsErrorDiagObjectNotFound;
         }

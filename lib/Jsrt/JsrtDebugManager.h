@@ -8,11 +8,11 @@
 #include "JsrtDebuggerObject.h"
 #include "JsrtDebugEventObject.h"
 
-class JsrtDebug : public Js::HaltCallback, public Js::DebuggerOptionsCallback, public HostDebugContext
+class JsrtDebugManager : public Js::HaltCallback, public Js::DebuggerOptionsCallback, public HostDebugContext
 {
 public:
-    JsrtDebug(ThreadContext* threadContext);
-    ~JsrtDebug();
+    JsrtDebugManager(ThreadContext* threadContext);
+    ~JsrtDebugManager();
 
     void SetDebugEventCallback(JsDiagDebugEventCallback debugEventCallback, void* callbackState);
     void* GetAndClearCallback();

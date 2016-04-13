@@ -4,7 +4,7 @@
 
 #pragma once
 
-class JsrtDebug;
+class JsrtDebugManager;
 class DebuggerObjectsManager;
 
 // Type of objects we give to debugger
@@ -56,11 +56,11 @@ private:
 class DebuggerObjectsManager
 {
 public:
-    DebuggerObjectsManager(JsrtDebug* debugObject);
+    DebuggerObjectsManager(JsrtDebugManager* jsrtDebugManager);
     ~DebuggerObjectsManager();
 
     void ClearAll();
-    JsrtDebug* GetDebugObject() { return this->debugObject; };
+    JsrtDebugManager* GetJsrtDebugManager() { return this->jsrtDebugManager; };
     ArenaAllocator* GetDebugObjectArena();
     uint GetNextHandle() { return ++handleId; }
 
@@ -71,7 +71,7 @@ public:
 
 private:
     uint handleId;
-    JsrtDebug* debugObject;
+    JsrtDebugManager* jsrtDebugManager;
 
     typedef JsUtil::BaseDictionary<uint, DebuggerObjectBase*, ArenaAllocator> DebuggerObjectsDictionary;
     DebuggerObjectsDictionary* handleToDebuggerObjectsDictionary;
@@ -166,14 +166,14 @@ private:
 class JsrtDebugStackFrames
 {
 public:
-    JsrtDebugStackFrames(JsrtDebug* debugObject);
+    JsrtDebugStackFrames(JsrtDebugManager* jsrtDebugManager);
     ~JsrtDebugStackFrames();
     Js::JavascriptArray* StackFrames(Js::ScriptContext* scriptContext);
     bool TryGetFrameObjectFromFrameIndex(uint frameIndex, DebuggerStackFrame ** debuggerStackFrame);
 private:
     Js::DynamicObject* GetStackFrame(Js::DiagStackFrame * stackFrame, uint frameIndex);
     Js::JavascriptArray* stackTraceArray;
-    JsrtDebug* debugObject;
+    JsrtDebugManager* jsrtDebugManager;
 
     typedef JsUtil::BaseDictionary<uint, DebuggerStackFrame*, ArenaAllocator> FramesDictionary;
     FramesDictionary* framesDictionary;
