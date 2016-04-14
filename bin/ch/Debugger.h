@@ -6,7 +6,7 @@
 
 static const WCHAR controllerScript[] = {
 #include "DbgController.js.encoded"
-    L'\0'
+    _u('\0')
 };
 
 class Debugger

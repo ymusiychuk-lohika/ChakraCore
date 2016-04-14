@@ -191,7 +191,7 @@ static void CALLBACK PromiseContinuationCallback(JsValueRef task, void *callback
     messageQueue->Push(msg);
 }
 
-HRESULT RunScript(LPCWSTR fileName, LPCWSTR fileContents, BYTE *bcBuffer, wchar_t *fullPath)
+HRESULT RunScript(LPCWSTR fileName, LPCWSTR fileContents, BYTE *bcBuffer, char16 *fullPath)
 {
     HRESULT hr = S_OK;
     MessageQueue * messageQueue = new MessageQueue();
@@ -232,7 +232,7 @@ Error:
     return hr;
 }
 
-HRESULT CreateAndRunSerializedScript(LPCWSTR fileName, LPCWSTR fileContents, wchar_t *fullPath)
+HRESULT CreateAndRunSerializedScript(LPCWSTR fileName, LPCWSTR fileContents, char16 *fullPath)
 {
     HRESULT hr = S_OK;
     JsRuntimeHandle runtime = JS_INVALID_RUNTIME_HANDLE;
@@ -308,7 +308,7 @@ HRESULT ExecuteTest(LPCWSTR fileName)
         IfFailGo(E_FAIL);
     }
 
-    wchar_t fullPath[_MAX_PATH];
+    char16 fullPath[_MAX_PATH];
 
     if (_wfullpath(fullPath, fileName, _MAX_PATH) == nullptr)
     {
@@ -326,7 +326,7 @@ HRESULT ExecuteTest(LPCWSTR fileName)
     {
         if (isUtf8)
         {
-            if (HostConfigFlags::flags.GenerateLibraryByteCodeHeader != nullptr && *HostConfigFlags::flags.GenerateLibraryByteCodeHeader != L'\0')
+            if (HostConfigFlags::flags.GenerateLibraryByteCodeHeader != nullptr && *HostConfigFlags::flags.GenerateLibraryByteCodeHeader != _u('\0'))
             {
                 WCHAR libraryName[_MAX_PATH];
                 WCHAR ext[_MAX_EXT];
