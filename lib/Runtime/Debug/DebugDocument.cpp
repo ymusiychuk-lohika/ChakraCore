@@ -80,10 +80,7 @@ namespace Js
             return E_FAIL;
         }
 
-        if (this->SetBreakPoint(statement, breakpointState) == nullptr)
-        {
-            return E_FAIL;
-        }
+        this->SetBreakPoint(statement, breakpointState);
 
         return S_OK;
     }
