@@ -367,7 +367,7 @@ var controllerObj = (function () {
         }
         if ("handle" in obj) {
             if (level >= 0) {
-                var childProps = callHostFunction(hostDebugObject.JsDiagGetProperties, obj["handle"], 1000, 1000);
+                var childProps = callHostFunction(hostDebugObject.JsDiagGetProperties, obj["handle"], 0, 1000);
                 if (childProps && (obj["handle"] in childProps)) {
                     var properties = childProps[obj["handle"]]["properties"];
                     GetChildrens(properties, level - 1);

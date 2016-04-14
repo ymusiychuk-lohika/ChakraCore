@@ -514,12 +514,10 @@ Js::DynamicObject* JsrtDebugManager::GetSource(uint scriptId)
 
 Js::JavascriptArray* JsrtDebugManager::GetStackFrames(Js::ScriptContext* scriptContext)
 {
-    if (this->stackFrames != nullptr)
+    if (this->stackFrames == nullptr)
     {
-        return this->stackFrames->StackFrames(scriptContext);
+        this->stackFrames = Anew(this->GetDebugObjectArena(), JsrtDebugStackFrames, this);
     }
-
-    this->stackFrames = Anew(this->GetDebugObjectArena(), JsrtDebugStackFrames, this);
 
     return this->stackFrames->StackFrames(scriptContext);
 }
@@ -530,8 +528,6 @@ bool JsrtDebugManager::TryGetFrameObjectFromFrameIndex(Js::ScriptContext *script
     {
         this->GetStackFrames(scriptContext);
     }
-
-    Assert(this->stackFrames != nullptr);
 
     return this->stackFrames->TryGetFrameObjectFromFrameIndex(frameIndex, debuggerStackFrame);
 }

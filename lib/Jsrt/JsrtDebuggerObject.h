@@ -65,7 +65,6 @@ private:
     JsrtDebuggerObjectFunction(JsrtDebuggerObjectsManager* debuggerObjectsManager, Js::FunctionBody* functionBody);
     ~JsrtDebuggerObjectFunction();
     Js::FunctionBody* functionBody;
-    Js::DynamicObject* functionObject;
 };
 
 class JsrtDebuggerObjectProperty : public JsrtDebuggerObjectBase
@@ -81,7 +80,6 @@ private:
     ~JsrtDebuggerObjectProperty();
     WeakArenaReference<Js::IDiagObjectModelDisplay>* objectDisplay;
     WeakArenaReference<Js::IDiagObjectModelWalkerBase>* walkerRef;
-    Js::DynamicObject* propertyObject;
 };
 
 class JsrtDebuggerObjectGlobalsNode : public JsrtDebuggerObjectBase
@@ -97,7 +95,6 @@ private:
     ~JsrtDebuggerObjectGlobalsNode();
     WeakArenaReference<Js::IDiagObjectModelDisplay>* objectDisplay;
     WeakArenaReference<Js::IDiagObjectModelWalkerBase>* walkerRef;
-    Js::DynamicObject* propertyObject;
 };
 
 class JsrtDebuggerObjectScope : public JsrtDebuggerObjectBase
@@ -113,7 +110,6 @@ private:
     ~JsrtDebuggerObjectScope();
     WeakArenaReference<Js::IDiagObjectModelDisplay>* objectDisplay;
     WeakArenaReference<Js::IDiagObjectModelWalkerBase>* walkerRef;
-    Js::DynamicObject* scopeObject;
     uint index;
 };
 
@@ -131,8 +127,6 @@ private:
     uint frameIndex;
     Js::DiagStackFrame* stackFrame;
     WeakArenaReference<Js::IDiagObjectModelWalkerBase>* pObjectModelWalker;
-    Js::DynamicObject* stackTraceObject;
-    Js::DynamicObject* propertiesObject;
     JsrtDebuggerObjectsManager * debuggerObjectsManager;
 };
 
@@ -145,7 +139,6 @@ public:
     bool TryGetFrameObjectFromFrameIndex(uint frameIndex, JsrtDebuggerStackFrame ** debuggerStackFrame);
 private:
     Js::DynamicObject* GetStackFrame(Js::DiagStackFrame * stackFrame, uint frameIndex);
-    Js::JavascriptArray* stackTraceArray;
     JsrtDebugManager* jsrtDebugManager;
 
     typedef JsUtil::BaseDictionary<uint, JsrtDebuggerStackFrame*, ArenaAllocator> FramesDictionary;
