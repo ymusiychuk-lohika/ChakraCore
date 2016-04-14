@@ -197,11 +197,11 @@ namespace Js
 
     }
 
-    Js::ScriptFunction* DiagStackFrame::TryGetFunctionForEval(Js::ScriptContext* scriptContext, LPCOLESTR pszSrc, BOOL isStrictMode, BOOL isThisAvailable, BOOL isLibraryCode /* = FALSE */)
+    Js::ScriptFunction* DiagStackFrame::TryGetFunctionForEval(Js::ScriptContext* scriptContext, LPCOLESTR pszSrc, BOOL isLibraryCode /* = FALSE */)
     {
         // TODO: pass the real length of the source code instead of wcslen
         ulong grfscr = fscrReturnExpression | fscrEval | fscrEvalCode | fscrGlobalCode | fscrConsoleScopeEval;
-        if (!isThisAvailable)
+        if (!this->IsThisAvailable())
         {
             grfscr |= fscrDebuggerErrorOnGlobalThis;
         }
@@ -209,7 +209,7 @@ namespace Js
         {
             grfscr |= fscrIsLibraryCode;
         }
-        return scriptContext->GetGlobalObject()->EvalHelper(scriptContext, pszSrc, static_cast<int>(wcslen(pszSrc)), kmodGlobal, grfscr, Js::Constants::EvalCode, FALSE, FALSE, isStrictMode);
+        return scriptContext->GetGlobalObject()->EvalHelper(scriptContext, pszSrc, static_cast<int>(wcslen(pszSrc)), kmodGlobal, grfscr, Js::Constants::EvalCode, FALSE, FALSE, this->IsStrictMode());
     }
 
     void DiagStackFrame::EvaluateImmediate(LPCOLESTR pszSrc, BOOL isLibraryCode, Js::ResolvedObject * resolvedObject)
@@ -220,8 +220,7 @@ namespace Js
 
         if (resolvedObject->obj == nullptr)
         {
-            Js::ScriptFunction* pfuncScript = this->TryGetFunctionForEval(this->GetScriptContext(), pszSrc,
-                this->IsStrictMode(), this->IsThisAvailable(), isLibraryCode);
+            Js::ScriptFunction* pfuncScript = this->TryGetFunctionForEval(this->GetScriptContext(), pszSrc, isLibraryCode);
             if (pfuncScript != nullptr)
             {
                 // Passing the nonuser code state from the enclosing function to the current function.
