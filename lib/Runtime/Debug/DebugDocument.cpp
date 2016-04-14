@@ -178,6 +178,7 @@ namespace Js
 
     bool DebugDocument::FindBPStatementLocation(UINT bpId, StatementLocation * statement)
     {
+        bool foundStatement = false;
         if (m_breakpointList != nullptr)
         {
             m_breakpointList->MapUntil([&](int index, BreakpointProbe* bpProbe) -> bool
@@ -185,12 +186,13 @@ namespace Js
                 if (bpProbe != nullptr && bpProbe->GetId() == bpId)
                 {
                     bpProbe->GetStatementLocation(statement);
+                    foundStatement = true;
                     return true;
                 }
                 return false;
             });
         }
-        return false;
+        return foundStatement;
     }
 
     BOOL DebugDocument::GetStatementSpan(long ibos, StatementSpan* pStatement)
