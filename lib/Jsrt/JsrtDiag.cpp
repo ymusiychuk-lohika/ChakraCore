@@ -1,6 +1,7 @@
-//----------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------
 // Copyright (C) Microsoft. All rights reserved.
-//----------------------------------------------------------------------------
+// Licensed under the MIT license. See LICENSE.txt file in the project root for full license information.
+//-------------------------------------------------------------------------------------------------------
 
 #include "JsrtPch.h"
 #include "JsrtInternal.h"
@@ -8,14 +9,14 @@
 #include "ThreadContextTLSEntry.h"
 #include "JsrtDebugUtils.h"
 
-#define VALIDATE_IS_DEBUGGING(debugObject) \
-    if (debugObject == nullptr || !debugObject->IsDebugEventCallbackSet()) \
+#define VALIDATE_IS_DEBUGGING(jsrtDebugManager) \
+    if (jsrtDebugManager == nullptr || !jsrtDebugManager->IsDebugEventCallbackSet()) \
     { \
         return JsErrorDiagNotDebugging; \
     }
 
 #define VALIDATE_RUNTIME_IS_AT_BREAK(runtime) \
-    if (!runtime->GetThreadContext()->GetDebugManager()->IsAtDispatchHalt()) \
+    if (runtime->GetThreadContext()->GetDebugManager() == nullptr || !runtime->GetThreadContext()->GetDebugManager()->IsAtDispatchHalt()) \
     { \
         return JsErrorDiagNotAtBreak; \
     }
@@ -158,7 +159,7 @@ CHAKRA_API JsDiagStopDebugging(
             jsrtDebugManager->ClearBreakpointDebugDocumentDictionary();
         }
 
-        *callbackState = jsrtDebugManager->GetAndClearCallback();
+        *callbackState = jsrtDebugManager->GetAndClearCallbackState();
 
         return JsNoError;
     });
@@ -210,6 +211,7 @@ CHAKRA_API JsDiagGetSource(
         VALIDATE_IS_DEBUGGING(jsrtDebugManager);
 
         Js::DynamicObject* sourceObject = jsrtDebugManager->GetSource(scriptId);
+
         if (sourceObject == nullptr)
         {
             return JsErrorInvalidArgument;
@@ -547,7 +549,7 @@ CHAKRA_API JsDiagGetStackProperties(
 
         VALIDATE_IS_DEBUGGING(jsrtDebugManager);
 
-        DebuggerStackFrame* debuggerStackFrame = nullptr;
+        JsrtDebuggerStackFrame* debuggerStackFrame = nullptr;
         if (!jsrtDebugManager->TryGetFrameObjectFromFrameIndex(scriptContext, stackFrameIndex, &debuggerStackFrame))
         {
             return JsErrorDiagObjectNotFound;
@@ -585,7 +587,7 @@ CHAKRA_API JsDiagGetProperties(
 
         VALIDATE_IS_DEBUGGING(jsrtDebugManager);
 
-        DebuggerObjectBase* debuggerObject = nullptr;
+        JsrtDebuggerObjectBase* debuggerObject = nullptr;
         if (!jsrtDebugManager->GetDebuggerObjectsManager()->TryGetDebuggerObjectFromHandle(objectHandle, &debuggerObject) || debuggerObject == nullptr)
         {
             return JsErrorDiagInvalidHandle;
@@ -621,7 +623,7 @@ CHAKRA_API JsDiagGetObjectFromHandle(
 
         VALIDATE_IS_DEBUGGING(jsrtDebugManager);
 
-        DebuggerObjectBase* debuggerObject = nullptr;
+        JsrtDebuggerObjectBase* debuggerObject = nullptr;
         if (!jsrtDebugManager->GetDebuggerObjectsManager()->TryGetDebuggerObjectFromHandle(objectHandle, &debuggerObject) || debuggerObject == nullptr)
         {
             return JsErrorDiagInvalidHandle;
@@ -660,7 +662,7 @@ CHAKRA_API JsDiagEvaluate(
 
         VALIDATE_IS_DEBUGGING(jsrtDebugManager);
 
-        DebuggerStackFrame* debuggerStackFrame = nullptr;
+        JsrtDebuggerStackFrame* debuggerStackFrame = nullptr;
         if (!jsrtDebugManager->TryGetFrameObjectFromFrameIndex(scriptContext, stackFrameIndex, &debuggerStackFrame))
         {
             return JsErrorDiagObjectNotFound;

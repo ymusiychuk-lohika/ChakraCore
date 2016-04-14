@@ -1,6 +1,7 @@
-//---------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------
 // Copyright (C) Microsoft. All rights reserved.
-//----------------------------------------------------------------------------
+// Licensed under the MIT license. See LICENSE.txt file in the project root for full license information.
+//-------------------------------------------------------------------------------------------------------
 
 #include "JsrtPch.h"
 #include "JsrtDebugManager.h"
@@ -61,7 +62,7 @@ void JsrtDebugManager::SetDebugEventCallback(JsDiagDebugEventCallback debugEvent
     this->callbackState = callbackState;
 }
 
-void * JsrtDebugManager::GetAndClearCallback()
+void* JsrtDebugManager::GetAndClearCallbackState()
 {
     void* currentCallbackState = this->callbackState;
 
@@ -140,13 +141,13 @@ bool JsrtDebugManager::IsFirstChanceExceptionEnabled()
     return (this->GetBreakOnException() & JsDiagBreakOnExceptionAttributeFirstChance) == JsDiagBreakOnExceptionAttributeFirstChance;
 }
 
-HRESULT JsrtDebugManager::DbgRegisterFunction(Js::ScriptContext * scriptContext, Js::FunctionBody * functionBody, DWORD_PTR dwDebugSourceContext, LPCWSTR title)
+HRESULT JsrtDebugManager::DbgRegisterFunction(Js::ScriptContext* scriptContext, Js::FunctionBody* functionBody, DWORD_PTR dwDebugSourceContext, LPCWSTR title)
 {
     Js::Utf8SourceInfo* utf8SourceInfo = functionBody->GetUtf8SourceInfo();
 
     if (!utf8SourceInfo->GetIsLibraryCode() && !utf8SourceInfo->HasDebugDocument())
     {
-        DebugDocumentManager* debugDocumentManager = this->GetDebugDocumentManager();
+        JsrtDebugDocumentManager* debugDocumentManager = this->GetDebugDocumentManager();
         Assert(debugDocumentManager != nullptr);
 
         Js::DebugDocument* debugDocument = HeapNewNoThrow(Js::DebugDocument, utf8SourceInfo, functionBody);
@@ -159,7 +160,7 @@ HRESULT JsrtDebugManager::DbgRegisterFunction(Js::ScriptContext * scriptContext,
     return S_OK;
 }
 
-void JsrtDebugManager::ReportScriptCompile(Js::JavascriptFunction * scriptFunction, Js::Utf8SourceInfo* utf8SourceInfo, CompileScriptException* compileException)
+void JsrtDebugManager::ReportScriptCompile(Js::JavascriptFunction* scriptFunction, Js::Utf8SourceInfo* utf8SourceInfo, CompileScriptException* compileException)
 {
     if (this->debugEventCallback != nullptr)
     {
@@ -185,7 +186,7 @@ void JsrtDebugManager::ReportScriptCompile(Js::JavascriptFunction * scriptFuncti
         }
         else
         {
-            DebugDocumentManager* debugDocumentManager = this->GetDebugDocumentManager();
+            JsrtDebugDocumentManager* debugDocumentManager = this->GetDebugDocumentManager();
             Assert(debugDocumentManager != nullptr);
 
             // Create DebugDocument and then report JsDiagDebugEventSourceCompile event
@@ -204,7 +205,7 @@ void JsrtDebugManager::ReportScriptCompile(Js::JavascriptFunction * scriptFuncti
     }
 }
 
-void JsrtDebugManager::ReportBreak(Js::InterpreterHaltState * haltState)
+void JsrtDebugManager::ReportBreak(Js::InterpreterHaltState* haltState)
 {
     if (this->debugEventCallback != nullptr)
     {
@@ -226,7 +227,8 @@ void JsrtDebugManager::ReportBreak(Js::InterpreterHaltState * haltState)
         if (jsDiagDebugEvent == JsDiagDebugEventBreak)
         {
             UINT bpId = 0;
-            probeContainer->MapProbesUntil([&](int i, Js::Probe* pProbe) {
+            probeContainer->MapProbesUntil([&](int i, Js::Probe* pProbe)
+            {
                 Js::BreakpointProbe* bp = (Js::BreakpointProbe*)pProbe;
                 if (bp->Matches(functionBody, utf8SourceInfo->GetDebugDocument(), currentByteCodeOffset))
                 {
@@ -249,7 +251,7 @@ void JsrtDebugManager::ReportBreak(Js::InterpreterHaltState * haltState)
     }
 }
 
-void JsrtDebugManager::ReportExceptionBreak(Js::InterpreterHaltState * haltState)
+void JsrtDebugManager::ReportExceptionBreak(Js::InterpreterHaltState* haltState)
 {
     if (this->debugEventCallback != nullptr)
     {
@@ -287,7 +289,7 @@ void JsrtDebugManager::ReportExceptionBreak(Js::InterpreterHaltState * haltState
             resolvedObject.obj = resolvedObject.scriptContext->GetLibrary()->GetUndefined();
         }
 
-        DebuggerObjectBase::CreateDebuggerObject<DebuggerObjectProperty>(this->GetDebuggerObjectsManager(), resolvedObject, scriptContext, [&](Js::Var marshaledObj)
+        JsrtDebuggerObjectBase::CreateDebuggerObject<JsrtDebuggerObjectProperty>(this->GetDebuggerObjectsManager(), resolvedObject, scriptContext, [&](Js::Var marshaledObj)
         {
             JsrtDebugUtils::AddPropertyToObject(eventDataObject, JsrtDebugPropertyId::exception, marshaledObj, scriptContext);
         });
@@ -296,7 +298,7 @@ void JsrtDebugManager::ReportExceptionBreak(Js::InterpreterHaltState * haltState
     }
 }
 
-void JsrtDebugManager::HandleResume(Js::InterpreterHaltState * haltState, BREAKRESUMEACTION resumeAction)
+void JsrtDebugManager::HandleResume(Js::InterpreterHaltState* haltState, BREAKRESUMEACTION resumeAction)
 {
     Js::ScriptContext* scriptContext = haltState->framePointers->Peek()->GetScriptContext();
 
@@ -334,7 +336,7 @@ bool JsrtDebugManager::EnableAsyncBreak(Js::ScriptContext* scriptContext)
     return false;
 }
 
-void JsrtDebugManager::CallDebugEventCallback(JsDiagDebugEvent debugEvent, Js::DynamicObject * eventDataObject, Js::ScriptContext* scriptContext)
+void JsrtDebugManager::CallDebugEventCallback(JsDiagDebugEvent debugEvent, Js::DynamicObject* eventDataObject, Js::ScriptContext* scriptContext)
 {
     class AutoClear
     {
@@ -389,13 +391,15 @@ void JsrtDebugManager::CallDebugEventCallback(JsDiagDebugEvent debugEvent, Js::D
     }
 }
 
-void JsrtDebugManager::CallDebugEventCallbackForBreak(JsDiagDebugEvent debugEvent, Js::DynamicObject * eventDataObject, Js::ScriptContext * scriptContext)
+void JsrtDebugManager::CallDebugEventCallbackForBreak(JsDiagDebugEvent debugEvent, Js::DynamicObject* eventDataObject, Js::ScriptContext* scriptContext)
 {
     AutoSetDispatchHaltFlag autoSetDispatchHaltFlag(scriptContext, scriptContext->GetThreadContext());
+
 #if DBG
     void *frameAddress = _AddressOfReturnAddress();
     scriptContext->GetThreadContext()->GetDebugManager()->SetDispatchHaltFrameAddress(frameAddress);
 #endif
+
     this->CallDebugEventCallback(debugEvent, eventDataObject, scriptContext);
 
     for (Js::ScriptContext *tempScriptContext = scriptContext->GetThreadContext()->GetScriptContextList();
@@ -411,7 +415,7 @@ void JsrtDebugManager::CallDebugEventCallbackForBreak(JsDiagDebugEvent debugEven
     }
 }
 
-Js::DynamicObject * JsrtDebugManager::GetScript(Js::Utf8SourceInfo * utf8SourceInfo)
+Js::DynamicObject* JsrtDebugManager::GetScript(Js::Utf8SourceInfo* utf8SourceInfo)
 {
     Js::DynamicObject* scriptObject = utf8SourceInfo->GetScriptContext()->GetLibrary()->CreateObject();
 
@@ -423,7 +427,7 @@ Js::DynamicObject * JsrtDebugManager::GetScript(Js::Utf8SourceInfo * utf8SourceI
     return scriptObject;
 }
 
-Js::JavascriptArray * JsrtDebugManager::GetScripts(Js::ScriptContext* scriptContext)
+Js::JavascriptArray* JsrtDebugManager::GetScripts(Js::ScriptContext* scriptContext)
 {
     Js::JavascriptArray* scriptsArray = scriptContext->GetLibrary()->CreateArray();
 
@@ -472,7 +476,7 @@ Js::JavascriptArray * JsrtDebugManager::GetScripts(Js::ScriptContext* scriptCont
     return scriptsArray;
 }
 
-Js::DynamicObject * JsrtDebugManager::GetSource(uint scriptId)
+Js::DynamicObject* JsrtDebugManager::GetSource(uint scriptId)
 {
     Js::Utf8SourceInfo* utf8SourceInfo = nullptr;
 
@@ -508,7 +512,7 @@ Js::DynamicObject * JsrtDebugManager::GetSource(uint scriptId)
     return sourceObject;
 }
 
-Js::JavascriptArray * JsrtDebugManager::GetStackFrames(Js::ScriptContext* scriptContext)
+Js::JavascriptArray* JsrtDebugManager::GetStackFrames(Js::ScriptContext* scriptContext)
 {
     if (this->stackFrames != nullptr)
     {
@@ -520,7 +524,7 @@ Js::JavascriptArray * JsrtDebugManager::GetStackFrames(Js::ScriptContext* script
     return this->stackFrames->StackFrames(scriptContext);
 }
 
-bool JsrtDebugManager::TryGetFrameObjectFromFrameIndex(Js::ScriptContext *scriptContext, uint frameIndex, DebuggerStackFrame ** debuggerStackFrame)
+bool JsrtDebugManager::TryGetFrameObjectFromFrameIndex(Js::ScriptContext *scriptContext, uint frameIndex, JsrtDebuggerStackFrame ** debuggerStackFrame)
 {
     if (this->stackFrames == nullptr)
     {
@@ -579,11 +583,13 @@ Js::DynamicObject* JsrtDebugManager::SetBreakPoint(Js::Utf8SourceInfo* utf8Sourc
     return nullptr;
 }
 
-void JsrtDebugManager::GetBreakpoints(Js::JavascriptArray** bpsArray, Js::ScriptContext * scriptContext)
+void JsrtDebugManager::GetBreakpoints(Js::JavascriptArray** bpsArray, Js::ScriptContext* scriptContext)
 {
     Js::ScriptContext* arrayScriptContext = (*bpsArray)->GetScriptContext();
     Js::ProbeContainer* probeContainer = scriptContext->GetDebugContext()->GetProbeContainer();
-    probeContainer->MapProbes([&](int i, Js::Probe* pProbe) {
+
+    probeContainer->MapProbes([&](int i, Js::Probe* pProbe)
+    {
 
         Js::BreakpointProbe* bp = (Js::BreakpointProbe*)pProbe;
         Js::DynamicObject* bpObject = scriptContext->GetLibrary()->CreateObject();
@@ -599,11 +605,11 @@ void JsrtDebugManager::GetBreakpoints(Js::JavascriptArray** bpsArray, Js::Script
     });
 }
 
-DebuggerObjectsManager * JsrtDebugManager::GetDebuggerObjectsManager()
+JsrtDebuggerObjectsManager* JsrtDebugManager::GetDebuggerObjectsManager()
 {
     if (this->debuggerObjectsManager == nullptr)
     {
-        this->debuggerObjectsManager = Anew(this->GetDebugObjectArena(), DebuggerObjectsManager, this);
+        this->debuggerObjectsManager = Anew(this->GetDebugObjectArena(), JsrtDebuggerObjectsManager, this);
     }
     return this->debuggerObjectsManager;
 }
@@ -616,7 +622,7 @@ void JsrtDebugManager::ClearDebuggerObjects()
     }
 }
 
-ArenaAllocator * JsrtDebugManager::GetDebugObjectArena()
+ArenaAllocator* JsrtDebugManager::GetDebugObjectArena()
 {
     if (this->debugObjectArena == nullptr)
     {
@@ -628,16 +634,16 @@ ArenaAllocator * JsrtDebugManager::GetDebugObjectArena()
     return this->debugObjectArena;
 }
 
-DebugDocumentManager * JsrtDebugManager::GetDebugDocumentManager()
+JsrtDebugDocumentManager* JsrtDebugManager::GetDebugDocumentManager()
 {
     if (this->debugDocumentManager == nullptr)
     {
-        this->debugDocumentManager = Anew(this->GetDebugObjectArena(), DebugDocumentManager, this);
+        this->debugDocumentManager = Anew(this->GetDebugObjectArena(), JsrtDebugDocumentManager, this);
     }
     return this->debugDocumentManager;
 }
 
-void JsrtDebugManager::ClearDebugDocument(Js::ScriptContext * scriptContext)
+void JsrtDebugManager::ClearDebugDocument(Js::ScriptContext* scriptContext)
 {
     if (this->debugDocumentManager != nullptr)
     {
@@ -691,4 +697,3 @@ JsDiagDebugEvent JsrtDebugManager::GetDebugEventFromStopType(Js::StopType stopTy
 
     return JsDiagDebugEventBreak;
 }
-

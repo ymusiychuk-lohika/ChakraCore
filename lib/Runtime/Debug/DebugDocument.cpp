@@ -165,16 +165,12 @@ namespace Js
         Js::BreakpointProbe* probe = nullptr;
         if (m_breakpointList != nullptr)
         {
-            BreakpointProbeList* breakpointProbeList = this->GetBreakpointList();
-            breakpointProbeList->MapUntil([&](int index, BreakpointProbe* bpProbe) -> bool
+            m_breakpointList->MapUntil([&](int index, BreakpointProbe* bpProbe) -> bool
             {
-                if (bpProbe != nullptr)
+                if (bpProbe != nullptr && bpProbe->Matches(statement))
                 {
-                    if (bpProbe->Matches(statement))
-                    {
-                        probe = bpProbe;
-                        return true;
-                    }
+                    probe = bpProbe;
+                    return true;
                 }
                 return false;
             });
@@ -185,25 +181,19 @@ namespace Js
 
     bool DebugDocument::FindBPStatementLocation(UINT bpId, StatementLocation * statement)
     {
-        bool returnValue = false;
         if (m_breakpointList != nullptr)
         {
-            BreakpointProbeList* breakpointProbeList = this->GetBreakpointList();
-            breakpointProbeList->MapUntil([&](int index, BreakpointProbe* bpProbe) -> bool
+            m_breakpointList->MapUntil([&](int index, BreakpointProbe* bpProbe) -> bool
             {
-                if (bpProbe != nullptr)
+                if (bpProbe != nullptr && bpProbe->GetId() == bpId)
                 {
-                    if (bpProbe->GetId() == bpId)
-                    {
-                        bpProbe->GetStatementLocation(statement);
-                        returnValue = true;
-                        return true;
-                    }
+                    bpProbe->GetStatementLocation(statement);
+                    return true;
                 }
                 return false;
             });
         }
-        return returnValue;
+        return false;
     }
 
     BOOL DebugDocument::GetStatementSpan(long ibos, StatementSpan* pStatement)

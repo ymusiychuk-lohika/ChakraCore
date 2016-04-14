@@ -41,7 +41,7 @@ public:
 #endif
 
     void EnsureJsrtDebugManager();
-    void ClearJsrtDebugManager();
+    void DeleteJsrtDebugManager();
     JsrtDebugManager * GetJsrtDebugManager();
 
 private:

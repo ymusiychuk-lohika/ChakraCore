@@ -1,6 +1,7 @@
-//---------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------
 // Copyright (C) Microsoft. All rights reserved.
-//----------------------------------------------------------------------------
+// Licensed under the MIT license. See LICENSE.txt file in the project root for full license information.
+//-------------------------------------------------------------------------------------------------------
 
 #include "JsrtPch.h"
 #include "JsrtDebugEventObject.h"
@@ -26,14 +27,14 @@ Js::DynamicObject* JsrtDebugEventObject::GetEventDataObject()
     return this->eventDataObject;
 }
 
-DebugDocumentManager::DebugDocumentManager(JsrtDebugManager* jsrtDebugManager) :
+JsrtDebugDocumentManager::JsrtDebugDocumentManager(JsrtDebugManager* jsrtDebugManager) :
     breakpointDebugDocumentDictionary(nullptr)
 {
     Assert(jsrtDebugManager != nullptr);
     this->jsrtDebugManager = jsrtDebugManager;
 }
 
-DebugDocumentManager::~DebugDocumentManager()
+JsrtDebugDocumentManager::~JsrtDebugDocumentManager()
 {
     if (this->breakpointDebugDocumentDictionary != nullptr)
     {
@@ -46,7 +47,7 @@ DebugDocumentManager::~DebugDocumentManager()
     this->jsrtDebugManager = nullptr;
 }
 
-void DebugDocumentManager::AddDocument(UINT bpId, Js::DebugDocument * debugDocument)
+void JsrtDebugDocumentManager::AddDocument(UINT bpId, Js::DebugDocument * debugDocument)
 {
     BreakpointDebugDocumentDictionary* breakpointDebugDocumentDictionary = this->GetBreakpointDictionary();
 
@@ -55,7 +56,7 @@ void DebugDocumentManager::AddDocument(UINT bpId, Js::DebugDocument * debugDocum
     breakpointDebugDocumentDictionary->Add(bpId, debugDocument);
 }
 
-void DebugDocumentManager::ClearDebugDocument(Js::ScriptContext * scriptContext)
+void JsrtDebugDocumentManager::ClearDebugDocument(Js::ScriptContext * scriptContext)
 {
     if (scriptContext != nullptr)
     {
@@ -86,7 +87,7 @@ void DebugDocumentManager::ClearDebugDocument(Js::ScriptContext * scriptContext)
     }
 }
 
-void DebugDocumentManager::ClearBreakpointDebugDocumentDictionary()
+void JsrtDebugDocumentManager::ClearBreakpointDebugDocumentDictionary()
 {
     if (this->breakpointDebugDocumentDictionary != nullptr)
     {
@@ -94,7 +95,7 @@ void DebugDocumentManager::ClearBreakpointDebugDocumentDictionary()
     }
 }
 
-bool DebugDocumentManager::RemoveBreakpoint(UINT breakpointId)
+bool JsrtDebugDocumentManager::RemoveBreakpoint(UINT breakpointId)
 {
     if (this->breakpointDebugDocumentDictionary != nullptr)
     {
@@ -114,7 +115,7 @@ bool DebugDocumentManager::RemoveBreakpoint(UINT breakpointId)
     return false;
 }
 
-DebugDocumentManager::BreakpointDebugDocumentDictionary * DebugDocumentManager::GetBreakpointDictionary()
+JsrtDebugDocumentManager::BreakpointDebugDocumentDictionary * JsrtDebugDocumentManager::GetBreakpointDictionary()
 {
     if (this->breakpointDebugDocumentDictionary == nullptr)
     {

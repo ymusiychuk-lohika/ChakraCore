@@ -128,7 +128,7 @@ void JsrtRuntime::EnsureJsrtDebugManager()
     Assert(this->jsrtDebugManager != nullptr);
 }
 
-void JsrtRuntime::ClearJsrtDebugManager()
+void JsrtRuntime::DeleteJsrtDebugManager()
 {
     if (this->jsrtDebugManager != nullptr)
     {
