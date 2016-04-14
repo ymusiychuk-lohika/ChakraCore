@@ -61,6 +61,13 @@
   </test>
   <test>
     <default>
+      <files>bug6268659.js</files>
+      <compile-flags>-mic:1 -off:simplejit</compile-flags>
+      <tags>BugFix</tags>
+    </default>
+  </test>
+  <test>
+    <default>
       <compile-flags>-ForceArrayBTree</compile-flags>
       <files>ArrayBtreeBadCodeGen.js</files>
       <baseline>ArrayBtreeBadCodeGen.baseline</baseline>
@@ -648,6 +655,12 @@
      <default>
         <files>memcopy.js</files>
         <compile-flags>-mic:1 -off:simplejit -off:JITLoopBody -off:inline -off:globopt:1.18-1.30 -mmoc:0</compile-flags>
+     </default>
+  </test>
+  <test>
+     <default>
+        <files>memcopy.js</files>
+        <compile-flags>-mic:1 -off:simplejit -off:JITLoopBody -off:inline -off:globopt:1.18-1.30 -mmoc:0 -args float -endargs</compile-flags>
      </default>
   </test>
   <test>
