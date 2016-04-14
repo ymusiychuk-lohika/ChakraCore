@@ -91,7 +91,8 @@ var controllerObj = (function () {
                 name: name,
                 line: bpObject.line,
                 column: bpObject.column,
-                execStr: execStr
+                execStr: execStr,
+                enabled : true
             };
         }
 
@@ -108,26 +109,43 @@ var controllerObj = (function () {
             },
             setLocationBreakpoint: function (name, scriptId, line, column, execStr) {
                 var bpObj = {
-                    id: _locBpId--,
-                    scriptId: scriptId,
-                    name: name,
-                    line: line,
-                    column: column,
-                    execStr: execStr
+                    id : _locBpId--,
+                    scriptId : scriptId,
+                    name : name,
+                    line : line,
+                    column : column,
+                    execStr : execStr,
+                    enabled : false
                 }
                 addBpObject(bpObj);
             },
             enableBreakpoint: function (name) {
                 var bpObj = getBpFromName(name);
-                delete _bpMap[bpObj.id];
-                internalTrace(TRACE_INTERNAL_FUNCTIONS, "enableBreakpoint: ", name, " bpObj: ", bpObj);
-                bpObj = internalSetBp(bpObj.name, bpObj.scriptId, bpObj.line, bpObj.column, bpObj.execStr);
-                addBpObject(bpObj);
+                if(bpObj)
+                {
+                    delete _bpMap[bpObj.id];
+                    internalTrace(TRACE_INTERNAL_FUNCTIONS, "enableBreakpoint: ", name, " bpObj: ", bpObj);
+                    bpObj = internalSetBp(bpObj.name, bpObj.scriptId, bpObj.line, bpObj.column, bpObj.execStr);
+                    addBpObject(bpObj);
+                }
             },
             deleteBreakpoint: function (name) {
                 var bpObj = getBpFromName(name);
-                internalTrace(TRACE_INTERNAL_FUNCTIONS, "deleteBreakpoint: ", name, " bpObj: ", bpObj);
-                callHostFunction(hostDebugObject.JsDiagRemoveBreakpoint, bpObj.id);
+                if (bpObj && bpObj.enabled)
+                {
+                    internalTrace(TRACE_INTERNAL_FUNCTIONS, "deleteBreakpoint: ", name, " bpObj: ", bpObj);
+                    callHostFunction(hostDebugObject.JsDiagRemoveBreakpoint, bpObj.id);
+                    delete _bpMap[bpObj.id];
+                }
+            },
+            disableBreakpoint: function (name) {
+                var bpObj = getBpFromName(name);
+                if (bpObj && bpObj.enabled)
+                {
+                    internalTrace(TRACE_INTERNAL_FUNCTIONS, "disableBreakpoint: ", name, " bpObj: ", bpObj);
+                    callHostFunction(hostDebugObject.JsDiagRemoveBreakpoint, bpObj.id);
+                    _bpMap[bpObj.id].enabled = false;
+                }
             },
             getExecStr: function (id) {
                 for (var i in _bpMap) {
@@ -514,7 +532,7 @@ var controllerObj = (function () {
                 bpManager.enableBreakpoint(name);
             },
             disableBp: function (name) {
-                bpManager.deleteBreakpoint(name);
+                bpManager.disableBreakpoint(name);
             },
             deleteBp: function (name) {
                 bpManager.deleteBreakpoint(name);
