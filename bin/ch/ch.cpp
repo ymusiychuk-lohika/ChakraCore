@@ -31,9 +31,14 @@ int HostExceptionFilter(int exceptionCode, _EXCEPTION_POINTERS *ep)
     }
 
     fwprintf(stderr, _u("FATAL ERROR: %ls failed due to exception code %x\n"), hostName, exceptionCode);
-    fflush(stderr);
 
-    return EXCEPTION_EXECUTE_HANDLER;
+    _flushall();
+
+    // Exception happened, so we probably didn't clean up properly,
+    // Don't exit normally, just terminate
+    TerminateProcess(::GetCurrentProcess(), exceptionCode);
+
+    return EXCEPTION_CONTINUE_SEARCH;
 }
 
 void __stdcall PrintUsageFormat()
@@ -302,6 +307,10 @@ HRESULT ExecuteTest(LPCWSTR fileName)
     JsContextRef context = JS_INVALID_REFERENCE;
     IfJsErrorFailLog(ChakraRTInterface::JsCreateContext(runtime, &context));
     IfJsErrorFailLog(ChakraRTInterface::JsSetCurrentContext(context));
+    
+#ifdef DEBUG
+    ChakraRTInterface::SetCheckOpHelpersFlag(true);
+#endif
 
     if (!WScriptJsrt::Initialize())
     {
@@ -403,11 +412,7 @@ HRESULT ExecuteTestWithMemoryCheck(BSTR fileName)
     }
     __except (HostExceptionFilter(GetExceptionCode(), GetExceptionInformation()))
     {
-        _flushall();
-
-        // Exception happened, so we probably didn't clean up properly,
-        // Don't exit normally, just terminate
-        TerminateProcess(::GetCurrentProcess(), GetExceptionCode());
+        Assert(false);
     }
 
     _flushall();

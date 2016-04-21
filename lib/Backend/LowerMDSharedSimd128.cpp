@@ -353,6 +353,10 @@ IR::Instr* LowererMD::Simd128LowerUnMappedInstruction(IR::Instr *instr)
     case Js::OpCode::Simd128_Max_U8:
         return Simd128LowerMinMax(instr);
 
+    case Js::OpCode::Simd128_Min_F4:
+    case Js::OpCode::Simd128_Max_F4:
+        return Simd128LowerMinMax_F4(instr);
+
     case Js::OpCode::Simd128_MinNum_F4:
     case Js::OpCode::Simd128_MaxNum_F4:
         return Simd128LowerMinMaxNum(instr);
@@ -422,7 +426,7 @@ IR::Instr* LowererMD::Simd128LowerConstructor_8(IR::Instr *instr)
     dst = args->Pop();
 
     uint i = 0;
-    while (!args->Empty())
+    while (!args->Empty() && i < 8)
     {
         srcs[i] = args->Pop();
         // src's might have been constant prop'ed. Enregister them if so.
@@ -461,7 +465,7 @@ IR::Instr* LowererMD::Simd128LowerConstructor_16(IR::Instr *instr)
     dst = args->Pop();
 
     uint i = 0;
-    while (!args->Empty())
+    while (!args->Empty() && i < 16)
     {
         srcs[i] = args->Pop();
         // src's might have been constant prop'ed. Enregister them if so.
@@ -745,18 +749,13 @@ IR::Instr* LowererMD::Simd128LowerLdLane(IR::Instr *instr)
             if (laneType == TyInt8)
             {
                 IR::RegOpnd * tmp = IR::RegOpnd::New(TyInt8, m_func);
-#ifdef _M_IX86
-                tmp->SetReg(RegEBX);
-#else
-                tmp->SetReg(RegRBX);
-#endif
-                newInstr = IR::Instr::New(Js::OpCode::MOV, tmp->UseWithNewType(TyInt32, m_func), dst, m_func);
+                newInstr = IR::Instr::New(Js::OpCode::MOV, tmp, dst, m_func);
                 instr->InsertBefore(newInstr);
+                Legalize(newInstr);
                 newInstr = IR::Instr::New(Js::OpCode::MOVSX, dst, tmp, m_func);
             }
             else
             {
-                // any register can be 2-byte addressable
                 newInstr = IR::Instr::New(Js::OpCode::MOVSXW, dst, dst->UseWithNewType(laneType, m_func), m_func);
             }
         }
@@ -773,11 +772,7 @@ IR::Instr* LowererMD::Simd128LowerLdLane(IR::Instr *instr)
     {
         IR::Instr* pInstr    = nullptr;
         IR::RegOpnd* tmp = IR::RegOpnd::New(TyInt8, m_func);
-#ifdef _M_IX86
-        tmp->SetReg(RegEBX);
-#else
-        tmp->SetReg(RegRBX);
-#endif
+
         // cmp      dst, -1
         pInstr = IR::Instr::New(Js::OpCode::CMP, m_func);
         pInstr->SetSrc1(dst);
@@ -785,8 +780,10 @@ IR::Instr* LowererMD::Simd128LowerLdLane(IR::Instr *instr)
         instr->InsertBefore(pInstr);
         Legalize(pInstr);
 
-        // mov     tmp(TyInt32), dst
-        instr->InsertBefore(IR::Instr::New(Js::OpCode::MOV, tmp->UseWithNewType(TyInt32, m_func), dst, m_func));
+        // mov     tmp(TyInt8), dst
+        pInstr = IR::Instr::New(Js::OpCode::MOV, tmp, dst, m_func);
+        instr->InsertBefore(pInstr);
+        Legalize(pInstr);
 
         // sete     tmp(TyInt8)
         pInstr = IR::Instr::New(Js::OpCode::SETE, tmp, tmp, m_func);
@@ -1363,11 +1360,7 @@ IR::Instr* LowererMD::Simd128LowerShift(IR::Instr *instr)
         IR::RegOpnd * shamtReg = IR::RegOpnd::New(TyInt8, m_func);
         shamtReg->SetReg(LowererMDArch::GetRegShiftCount());
         IR::RegOpnd * tmp = IR::RegOpnd::New(TyInt8, m_func);
-#ifdef _M_IX86
-        tmp->SetReg(RegEBX);
-#else
-        tmp->SetReg(RegRBX);
-#endif
+
         // MOVAPS   dst, src1
         instr->InsertBefore(IR::Instr::New(Js::OpCode::MOVAPS, dst, src1, m_func));
         // MOV      reg2, 0FFh
@@ -1380,7 +1373,9 @@ IR::Instr* LowererMD::Simd128LowerShift(IR::Instr *instr)
         // MOV      tmp, reg2
         // MOVSX    reg2, tmp(TyInt8)
 
-        instr->InsertBefore(IR::Instr::New(Js::OpCode::MOV, tmp->UseWithNewType(TyInt32, m_func), reg2, m_func));
+        pInstr = IR::Instr::New(Js::OpCode::MOV, tmp, reg2, m_func);
+        instr->InsertBefore(pInstr);
+        Legalize(pInstr);
 
         instr->InsertBefore(IR::Instr::New(Js::OpCode::MOVSX, reg2, tmp, m_func));
         IR::RegOpnd *mask = IR::RegOpnd::New(TySimd128I4, m_func);
@@ -1722,13 +1717,13 @@ IR::Instr* LowererMD::Simd128LowerShuffle_4(IR::Instr* instr)
             // compute re-arrangement mask
             for (uint8 i = 0, j1 = 0, j2 = 2; i < 4; i++)
             {
-                if (lanesSrc[i] == 1)
+                if (lanesSrc[i] == 1 && j1 < 4)
                 {
                     ordLanes[j1] = lanes[i];
                     reArrLanes[i] = j1;
                     j1++;
                 }
-                else
+                else if(j2 < 4)
                 {
                     Assert(lanesSrc[i] == 2);
                     ordLanes[j2] = lanes[i];
@@ -2329,6 +2324,68 @@ IR::Instr* LowererMD::Simd128LowerMinMax(IR::Instr* instr)
     return pInstr;
 }
 
+IR::Instr* LowererMD::Simd128LowerMinMax_F4(IR::Instr* instr)
+{
+    IR::Instr *pInstr;
+    IR::Opnd* dst = instr->GetDst();
+    IR::Opnd* src1 = instr->GetSrc1();
+    IR::Opnd* src2 = instr->GetSrc2();
+    Assert(dst->IsRegOpnd() && dst->IsSimd128());
+    Assert(src1->IsRegOpnd() && src1->IsSimd128());
+    Assert(src2->IsRegOpnd() && src2->IsSimd128());
+    Assert(instr->m_opcode == Js::OpCode::Simd128_Min_F4 || instr->m_opcode == Js::OpCode::Simd128_Max_F4);
+    IR::RegOpnd* tmp1 = IR::RegOpnd::New(src1->GetType(), m_func);
+    IR::RegOpnd* tmp2 = IR::RegOpnd::New(src2->GetType(), m_func);
+
+    if (instr->m_opcode == Js::OpCode::Simd128_Min_F4)
+    {
+        pInstr = IR::Instr::New(Js::OpCode::MINPS, tmp1, src1, src2, m_func);
+        instr->InsertBefore(pInstr);
+        Legalize(pInstr);
+        //
+        pInstr = IR::Instr::New(Js::OpCode::MINPS, tmp2, src2, src1, m_func);
+        instr->InsertBefore(pInstr);
+        Legalize(pInstr);
+        //
+        pInstr = IR::Instr::New(Js::OpCode::ORPS, dst, tmp1, tmp2, m_func);
+        instr->InsertBefore(pInstr);
+        Legalize(pInstr);
+    }
+    else 
+    {
+
+        //This sequence closely mirrors SIMDFloat32x4Operation::OpMax except for
+        //the fact that tmp2 (tmpbValue) is reused to reduce the number of registers
+        //needed for this sequence. 
+
+        pInstr = IR::Instr::New(Js::OpCode::MAXPS, tmp1, src1, src2, m_func);
+        instr->InsertBefore(pInstr);
+        Legalize(pInstr);
+        //
+        pInstr = IR::Instr::New(Js::OpCode::MAXPS, tmp2, src2, src1, m_func);
+        instr->InsertBefore(pInstr);
+        Legalize(pInstr);
+        //
+        pInstr = IR::Instr::New(Js::OpCode::ANDPS, tmp1, tmp1, tmp2, m_func);
+        instr->InsertBefore(pInstr);
+        Legalize(pInstr);
+        //
+        pInstr = IR::Instr::New(Js::OpCode::CMPUNORDPS, tmp2, src1, src2, m_func);
+        instr->InsertBefore(pInstr);
+        Legalize(pInstr);
+        //
+        pInstr = IR::Instr::New(Js::OpCode::ORPS, dst, tmp1, tmp2, m_func);
+        instr->InsertBefore(pInstr);
+        Legalize(pInstr);
+    }
+
+    pInstr = instr->m_prev;
+    instr->Remove();
+    return pInstr;
+
+}
+
+
 IR::Instr* LowererMD::Simd128LowerMinMaxNum(IR::Instr* instr)
 {
     IR::Instr *pInstr;
@@ -2504,11 +2561,7 @@ IR::Instr* LowererMD::Simd128LowerAllTrue(IR::Instr* instr)
     Assert(src1->IsRegOpnd() && src1->IsSimd128());
 
     IR::RegOpnd * tmp = IR::RegOpnd::New(TyInt8, m_func);
-#ifdef _M_IX86
-    tmp->SetReg(RegEBX);
-#else
-    tmp->SetReg(RegRBX);
-#endif
+
     // pmovmskb dst, src1
     pInstr = IR::Instr::New(Js::OpCode::PMOVMSKB, dst, src1, m_func);
     instr->InsertBefore(pInstr);
@@ -2520,8 +2573,10 @@ IR::Instr* LowererMD::Simd128LowerAllTrue(IR::Instr* instr)
     instr->InsertBefore(pInstr);
     Legalize(pInstr);
 
-    // mov     tmp(TyInt32), dst
-    instr->InsertBefore(IR::Instr::New(Js::OpCode::MOV, tmp->UseWithNewType(TyInt32, m_func), dst, m_func));
+    // mov     tmp(TyInt8), dst
+    pInstr = IR::Instr::New(Js::OpCode::MOV, tmp, dst, m_func);
+    instr->InsertBefore(pInstr);
+    Legalize(pInstr);
 
     // sete    tmp(TyInt8)
     pInstr = IR::Instr::New(Js::OpCode::SETE, tmp, tmp, m_func);
@@ -3323,8 +3378,6 @@ void LowererMD::Simd128InitOpcodeMap()
     SET_SIMDOPCODE(Simd128_Sub_F4                , SUBPS);
     SET_SIMDOPCODE(Simd128_Mul_F4                , MULPS);
     SET_SIMDOPCODE(Simd128_Div_F4                , DIVPS);
-    SET_SIMDOPCODE(Simd128_Min_F4                , MINPS);
-    SET_SIMDOPCODE(Simd128_Max_F4                , MAXPS);
     SET_SIMDOPCODE(Simd128_Sqrt_F4               , SQRTPS);
     SET_SIMDOPCODE(Simd128_Lt_F4                 , CMPLTPS); // CMPLTPS
     SET_SIMDOPCODE(Simd128_LtEq_F4               , CMPLEPS); // CMPLEPS
