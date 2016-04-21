@@ -157,6 +157,7 @@ public:
     ArenaAllocator* GetDebugObjectArena();
     uint GetNextHandle() { return ++handleId; }
 
+    void AddToDebuggerObjectsDictionary(JsrtDebuggerObjectBase* debuggerObject);
     bool TryGetDebuggerObjectFromHandle(uint handle, JsrtDebuggerObjectBase** debuggerObject);
 
     void AddToDataToDebuggerObjectsDictionary(void* data, JsrtDebuggerObjectBase* debuggerObject);
@@ -171,6 +172,4 @@ private:
 
     typedef JsUtil::BaseDictionary<void*, JsrtDebuggerObjectBase*, ArenaAllocator> DataToDebuggerObjectsDictionary;
     DataToDebuggerObjectsDictionary* dataToDebuggerObjectsDictionary;
-
-    void AddToDebuggerObjectsDictionary(JsrtDebuggerObjectBase* debuggerObject);
 };

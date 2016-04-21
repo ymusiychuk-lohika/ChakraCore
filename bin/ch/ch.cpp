@@ -366,7 +366,7 @@ HRESULT ExecuteTest(LPCWSTR fileName)
 Error:
     if (Debugger::debugger != nullptr)
     {
-        Debugger::debugger->VerifyAndWriteNewBaselineFile(fileName);
+        Debugger::debugger->CompareOrWriteBaselineFile(fileName);
         Debugger::CloseDebugger();
     }
 

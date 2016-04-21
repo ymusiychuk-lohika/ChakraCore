@@ -7,5 +7,6 @@
 FLAG(BSTR, Serialized,                    "If source is UTF8, deserializes from bytecode file", NULL)
 FLAG(BSTR, GenerateLibraryByteCodeHeader, "Generate bytecode header file from library code", NULL)
 FLAG(BSTR, DebugLaunch,                   "Create the test debugger and execute test in the debug attached mode", NULL)
+FLAG(BSTR, dbgbaseline,                   "Baseline file to compare debugger output", NULL)
 #undef FLAG
 #endif

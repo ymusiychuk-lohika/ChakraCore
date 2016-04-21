@@ -296,116 +296,125 @@ Js::DynamicObject * JsrtDebuggerStackFrame::GetLocalsObject()
 
     Js::DynamicObject* globalsObject = nullptr;
 
-    if (this->pObjectModelWalker == nullptr)
+    if (this->pObjectModelWalker != nullptr)
     {
-        ReferencedArenaAdapter* pRefArena = scriptContext->GetThreadContext()->GetDebugManager()->GetDiagnosticArena();
+        HeapDelete(this->pObjectModelWalker);
+    }
 
-        Js::IDiagObjectModelDisplay* pLocalsDisplay = Anew(pRefArena->Arena(), Js::LocalsDisplay, this->stackFrame);
-        this->pObjectModelWalker = pLocalsDisplay->CreateWalker();
+    ReferencedArenaAdapter* pRefArena = scriptContext->GetThreadContext()->GetDebugManager()->GetDiagnosticArena();
+    Js::IDiagObjectModelDisplay* pLocalsDisplay = Anew(pRefArena->Arena(), Js::LocalsDisplay, this->stackFrame);
+    this->pObjectModelWalker = pLocalsDisplay->CreateWalker();
+
+    if (this->pObjectModelWalker != nullptr)
+    {
         Js::LocalsWalker* localsWalker = (Js::LocalsWalker*)this->pObjectModelWalker->GetStrongReference();
 
-        ulong totalProperties = localsWalker->GetChildrenCount();
-        if (totalProperties > 0)
+        if (localsWalker != nullptr)
         {
-            int index = 0;
-            Js::ResolvedObject resolvedObject;
-            resolvedObject.scriptContext = this->stackFrame->GetScriptContext();
-
-            if (Js::VariableWalkerBase::GetExceptionObject(index, this->stackFrame, &resolvedObject))
+            ulong totalProperties = localsWalker->GetChildrenCount();
+            if (totalProperties > 0)
             {
-                JsrtDebuggerObjectBase::CreateDebuggerObject<JsrtDebuggerObjectProperty>(this->debuggerObjectsManager, resolvedObject, scriptContext, [&](Js::Var marshaledObj)
+                int index = 0;
+                Js::ResolvedObject resolvedObject;
+                resolvedObject.scriptContext = this->stackFrame->GetScriptContext();
+
+                if (Js::VariableWalkerBase::GetExceptionObject(index, this->stackFrame, &resolvedObject))
                 {
-                    JsrtDebugUtils::AddPropertyToObject(propertiesObject, JsrtDebugPropertyId::exception, marshaledObj, scriptContext);
-                });
-            }
-
-            if (localsWalker->HasUserNotDefinedArguments() && localsWalker->CreateArgumentsObject(&resolvedObject))
-            {
-                JsrtDebuggerObjectBase::CreateDebuggerObject<JsrtDebuggerObjectProperty>(this->debuggerObjectsManager, resolvedObject, scriptContext, [&](Js::Var marshaledObj)
-                {
-                    JsrtDebugUtils::AddPropertyToObject(propertiesObject, JsrtDebugPropertyId::arguments, marshaledObj, scriptContext);
-                });
-            }
-
-            Js::ReturnedValueList *returnedValueList = this->stackFrame->GetScriptContext()->GetDebugContext()->GetProbeContainer()->GetReturnedValueList();
-
-            if (returnedValueList != nullptr && returnedValueList->Count() > 0 && this->stackFrame->IsTopFrame())
-            {
-                for (int i = 0; i < returnedValueList->Count(); ++i)
-                {
-                    Js::ReturnedValue * returnValue = returnedValueList->Item(i);
-                    Js::VariableWalkerBase::GetReturnedValueResolvedObject(returnValue, this->stackFrame, &resolvedObject);
-
-                    JsrtDebuggerObjectBase::CreateDebuggerObject<JsrtDebuggerObjectProperty>(debuggerObjectsManager, resolvedObject, scriptContext, [&](Js::Var marshaledObj)
+                    JsrtDebuggerObjectBase::CreateDebuggerObject<JsrtDebuggerObjectProperty>(this->debuggerObjectsManager, resolvedObject, scriptContext, [&](Js::Var marshaledObj)
                     {
-
-                        if (returnValue->isValueOfReturnStatement)
-                        {
-                            returnValueObject = marshaledObj;
-                        }
-                        else
-                        {
-                            Js::JavascriptOperators::OP_SetElementI((Js::Var)functionCallsReturn, Js::JavascriptNumber::ToVar(functionCallsReturnCount, scriptContext), marshaledObj, scriptContext);
-                            functionCallsReturnCount++;
-                        }
+                        JsrtDebugUtils::AddPropertyToObject(propertiesObject, JsrtDebugPropertyId::exception, marshaledObj, scriptContext);
                     });
                 }
 
-                if (returnValueObject != nullptr)
+                if (localsWalker->HasUserNotDefinedArguments() && localsWalker->CreateArgumentsObject(&resolvedObject))
                 {
-                    JsrtDebugUtils::AddPropertyToObject(propertiesObject, JsrtDebugPropertyId::returnValue, returnValueObject, scriptContext);
+                    JsrtDebuggerObjectBase::CreateDebuggerObject<JsrtDebuggerObjectProperty>(this->debuggerObjectsManager, resolvedObject, scriptContext, [&](Js::Var marshaledObj)
+                    {
+                        JsrtDebugUtils::AddPropertyToObject(propertiesObject, JsrtDebugPropertyId::arguments, marshaledObj, scriptContext);
+                    });
                 }
 
-                if (functionCallsReturnCount > 0)
+                Js::ReturnedValueList *returnedValueList = this->stackFrame->GetScriptContext()->GetDebugContext()->GetProbeContainer()->GetReturnedValueList();
+
+                if (returnedValueList != nullptr && returnedValueList->Count() > 0 && this->stackFrame->IsTopFrame())
                 {
-                    JsrtDebugUtils::AddPropertyToObject(propertiesObject, JsrtDebugPropertyId::functionCallsReturn, functionCallsReturn, scriptContext);
+                    for (int i = 0; i < returnedValueList->Count(); ++i)
+                    {
+                        Js::ReturnedValue * returnValue = returnedValueList->Item(i);
+                        Js::VariableWalkerBase::GetReturnedValueResolvedObject(returnValue, this->stackFrame, &resolvedObject);
+
+                        JsrtDebuggerObjectBase::CreateDebuggerObject<JsrtDebuggerObjectProperty>(debuggerObjectsManager, resolvedObject, scriptContext, [&](Js::Var marshaledObj)
+                        {
+
+                            if (returnValue->isValueOfReturnStatement)
+                            {
+                                returnValueObject = marshaledObj;
+                            }
+                            else
+                            {
+                                Js::JavascriptOperators::OP_SetElementI((Js::Var)functionCallsReturn, Js::JavascriptNumber::ToVar(functionCallsReturnCount, scriptContext), marshaledObj, scriptContext);
+                                functionCallsReturnCount++;
+                            }
+                        });
+                    }
+
+                    if (returnValueObject != nullptr)
+                    {
+                        JsrtDebugUtils::AddPropertyToObject(propertiesObject, JsrtDebugPropertyId::returnValue, returnValueObject, scriptContext);
+                    }
+
+                    if (functionCallsReturnCount > 0)
+                    {
+                        JsrtDebugUtils::AddPropertyToObject(propertiesObject, JsrtDebugPropertyId::functionCallsReturn, functionCallsReturn, scriptContext);
+                    }
+                }
+
+                ulong localsCount = localsWalker->GetLocalVariablesCount();
+                for (ulong i = 0; i < localsCount; ++i)
+                {
+                    if (!localsWalker->GetLocal(i, &resolvedObject))
+                    {
+                        break;
+                    }
+
+                    JsrtDebuggerObjectBase::CreateDebuggerObject<JsrtDebuggerObjectProperty>(debuggerObjectsManager, resolvedObject, scriptContext, [&](Js::Var marshaledObj)
+                    {
+                        Js::JavascriptOperators::OP_SetElementI((Js::Var)localsArray, Js::JavascriptNumber::ToVar(totalLocalsCount, scriptContext), marshaledObj, scriptContext);
+                        totalLocalsCount++;
+                    });
+                }
+
+
+                index = 0;
+                BOOL foundGroup = TRUE;
+                while (foundGroup)
+                {
+                    foundGroup = localsWalker->GetScopeObject(index++, &resolvedObject);
+                    if (foundGroup == TRUE)
+                    {
+                        AutoPtr<WeakArenaReference<Js::IDiagObjectModelDisplay>> objectDisplayWeakRef = resolvedObject.GetObjectDisplay();
+                        JsrtDebuggerObjectBase* debuggerObject = JsrtDebuggerObjectScope::Make(debuggerObjectsManager, objectDisplayWeakRef, scopesCount);
+                        Js::DynamicObject* object = debuggerObject->GetJSONObject(resolvedObject.scriptContext);
+                        Assert(object != nullptr);
+                        Js::Var marshaledObj = Js::CrossSite::MarshalVar(scriptContext, object);
+                        Js::JavascriptOperators::OP_SetElementI((Js::Var)scopesArray, Js::JavascriptNumber::ToVar(scopesCount, scriptContext), marshaledObj, scriptContext);
+                        scopesCount++;
+                        objectDisplayWeakRef.Detach();
+                    }
+                }
+
+                if (localsWalker->GetGlobalsObject(&resolvedObject))
+                {
+                    JsrtDebuggerObjectBase::CreateDebuggerObject<JsrtDebuggerObjectGlobalsNode>(this->debuggerObjectsManager, resolvedObject, scriptContext, [&](Js::Var marshaledObj)
+                    {
+                        globalsObject = (Js::DynamicObject*)marshaledObj;
+                    });
                 }
             }
 
-            ulong localsCount = localsWalker->GetLocalVariablesCount();
-            for (ulong i = 0; i < localsCount; ++i)
-            {
-                if (!localsWalker->GetLocal(i, &resolvedObject))
-                {
-                    break;
-                }
-
-                JsrtDebuggerObjectBase::CreateDebuggerObject<JsrtDebuggerObjectProperty>(debuggerObjectsManager, resolvedObject, scriptContext, [&](Js::Var marshaledObj)
-                {
-                    Js::JavascriptOperators::OP_SetElementI((Js::Var)localsArray, Js::JavascriptNumber::ToVar(totalLocalsCount, scriptContext), marshaledObj, scriptContext);
-                    totalLocalsCount++;
-                });
-            }
-
-
-            index = 0;
-            BOOL foundGroup = TRUE;
-            while (foundGroup)
-            {
-                foundGroup = localsWalker->GetScopeObject(index++, &resolvedObject);
-                if (foundGroup == TRUE)
-                {
-                    AutoPtr<WeakArenaReference<Js::IDiagObjectModelDisplay>> objectDisplayWeakRef = resolvedObject.GetObjectDisplay();
-                    JsrtDebuggerObjectBase* debuggerObject = JsrtDebuggerObjectScope::Make(debuggerObjectsManager, objectDisplayWeakRef, scopesCount);
-                    Js::DynamicObject* object = debuggerObject->GetJSONObject(resolvedObject.scriptContext);
-                    Assert(object != nullptr);
-                    Js::Var marshaledObj = Js::CrossSite::MarshalVar(scriptContext, object);
-                    Js::JavascriptOperators::OP_SetElementI((Js::Var)scopesArray, Js::JavascriptNumber::ToVar(scopesCount, scriptContext), marshaledObj, scriptContext);
-                    scopesCount++;
-                    objectDisplayWeakRef.Detach();
-                }
-            }
-
-            if (localsWalker->GetGlobalsObject(&resolvedObject))
-            {
-                JsrtDebuggerObjectBase::CreateDebuggerObject<JsrtDebuggerObjectGlobalsNode>(this->debuggerObjectsManager, resolvedObject, scriptContext, [&](Js::Var marshaledObj)
-                {
-                    globalsObject = (Js::DynamicObject*)marshaledObj;
-                });
-            }
+            this->pObjectModelWalker->ReleaseStrongReference();
         }
 
-        this->pObjectModelWalker->ReleaseStrongReference();
         Adelete(pRefArena->Arena(), pLocalsDisplay);
     }
 
@@ -500,17 +509,9 @@ JsrtDebuggerObjectProperty::~JsrtDebuggerObjectProperty()
 
 JsrtDebuggerObjectBase * JsrtDebuggerObjectProperty::Make(JsrtDebuggerObjectsManager* debuggerObjectsManager, WeakArenaReference<Js::IDiagObjectModelDisplay>* objectDisplay)
 {
-    JsrtDebuggerObjectBase* debuggerObject = nullptr;
+    JsrtDebuggerObjectBase* debuggerObject = Anew(debuggerObjectsManager->GetDebugObjectArena(), JsrtDebuggerObjectProperty, debuggerObjectsManager, objectDisplay);
 
-    if (debuggerObjectsManager->TryGetDataFromDataToDebuggerObjectsDictionary(objectDisplay, &debuggerObject))
-    {
-        Assert(debuggerObject != nullptr);
-        return debuggerObject;
-    }
-
-    debuggerObject = Anew(debuggerObjectsManager->GetDebugObjectArena(), JsrtDebuggerObjectProperty, debuggerObjectsManager, objectDisplay);
-
-    debuggerObjectsManager->AddToDataToDebuggerObjectsDictionary(objectDisplay, debuggerObject);
+    debuggerObjectsManager->AddToDebuggerObjectsDictionary(debuggerObject);
 
     return debuggerObject;
 }
@@ -583,17 +584,9 @@ JsrtDebuggerObjectScope::~JsrtDebuggerObjectScope()
 
 JsrtDebuggerObjectBase * JsrtDebuggerObjectScope::Make(JsrtDebuggerObjectsManager * debuggerObjectsManager, WeakArenaReference<Js::IDiagObjectModelDisplay>* objectDisplay, uint index)
 {
-    JsrtDebuggerObjectBase* debuggerObject = nullptr;
+    JsrtDebuggerObjectBase* debuggerObject = Anew(debuggerObjectsManager->GetDebugObjectArena(), JsrtDebuggerObjectScope, debuggerObjectsManager, objectDisplay, index);
 
-    if (debuggerObjectsManager->TryGetDataFromDataToDebuggerObjectsDictionary(objectDisplay, &debuggerObject))
-    {
-        Assert(debuggerObject != nullptr);
-        return debuggerObject;
-    }
-
-    debuggerObject = Anew(debuggerObjectsManager->GetDebugObjectArena(), JsrtDebuggerObjectScope, debuggerObjectsManager, objectDisplay, index);
-
-    debuggerObjectsManager->AddToDataToDebuggerObjectsDictionary(objectDisplay, debuggerObject);
+    debuggerObjectsManager->AddToDebuggerObjectsDictionary(debuggerObject);
 
     return debuggerObject;
 }
@@ -703,17 +696,9 @@ JsrtDebuggerObjectGlobalsNode::~JsrtDebuggerObjectGlobalsNode()
 
 JsrtDebuggerObjectBase * JsrtDebuggerObjectGlobalsNode::Make(JsrtDebuggerObjectsManager * debuggerObjectsManager, WeakArenaReference<Js::IDiagObjectModelDisplay>* objectDisplay)
 {
-    JsrtDebuggerObjectBase* debuggerObject = nullptr;
+    JsrtDebuggerObjectBase* debuggerObject = Anew(debuggerObjectsManager->GetDebugObjectArena(), JsrtDebuggerObjectGlobalsNode, debuggerObjectsManager, objectDisplay);
 
-    if (debuggerObjectsManager->TryGetDataFromDataToDebuggerObjectsDictionary(objectDisplay, &debuggerObject))
-    {
-        Assert(debuggerObject != nullptr);
-        return debuggerObject;
-    }
-
-    debuggerObject = Anew(debuggerObjectsManager->GetDebugObjectArena(), JsrtDebuggerObjectGlobalsNode, debuggerObjectsManager, objectDisplay);
-
-    debuggerObjectsManager->AddToDataToDebuggerObjectsDictionary(objectDisplay, debuggerObject);
+    debuggerObjectsManager->AddToDebuggerObjectsDictionary(debuggerObject);
 
     return debuggerObject;
 }

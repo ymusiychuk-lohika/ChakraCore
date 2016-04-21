@@ -18,7 +18,7 @@ public:
     bool StartDebugging(JsRuntimeHandle runtime);
     bool StopDebugging(JsRuntimeHandle runtime);
     bool HandleDebugEvent(JsDiagDebugEvent debugEvent, JsValueRef eventData);
-    bool VerifyAndWriteNewBaselineFile(LPCWSTR fileName);
+    bool CompareOrWriteBaselineFile(LPCWSTR fileName);
     bool SourceRunDown();
 private:
     Debugger(JsRuntimeHandle runtime);
@@ -28,6 +28,7 @@ private:
     JsContextRef m_context;
     bool InstallDebugCallbacks(JsValueRef hostDebugObject);
     bool InstallHostCallback(JsValueRef hostDebugObject, const wchar_t *name, JsNativeFunction nativeFunction);
+    bool SetBaseline();
     bool CallFunction(wchar_t const * functionName, JsValueRef* arguments, unsigned short argumentCount, JsValueRef *result);
 public:
     static void CALLBACK JsDiagDebugEventHandler(_In_ JsDiagDebugEvent debugEvent, _In_ JsValueRef eventData, _In_opt_ void* callbackState);
