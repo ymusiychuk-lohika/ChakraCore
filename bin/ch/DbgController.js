@@ -155,6 +155,10 @@ var controllerObj = (function () {
                         _bpMap[i].execStr = newExecStr;
                     }
                 }
+            },
+            clearAllBreakpoints: function () {
+                _bpMap = [];
+                _locBpId = -1;
             }
         }
     })();
@@ -372,17 +376,17 @@ var controllerObj = (function () {
     }
 
     function GetObjectDisplay(obj) {
-        if ("value" in obj) {
-            if (obj.value && obj.value.length > 16) {
-                return obj.type + " <large string>";
-            }
-            return obj.type + " " + obj.value;
+        var objectDisplay = ("className" in obj) ? obj["className"] : obj["type"];
+
+        var value = ("value" in obj) ? obj["value"] : obj["display"];
+
+        if (value && value.length > 16) {
+            objectDisplay += " <large string>";
         } else {
-            if (obj.display && obj.display.length > 16) {
-                return obj.type + " <large string>";
-            }
-            return obj.type + " " + obj.display;
+            objectDisplay += " " + value;
         }
+
+        return objectDisplay;
     }
 
     function GetChild(obj, level) {
@@ -491,8 +495,7 @@ var controllerObj = (function () {
         var PASSED = 0;
         var FAILED = 1;
 
-        if (_baseline == undefined)
-        {
+        if (_baseline == undefined) {
             return PASSED;
         }
 
@@ -725,6 +728,7 @@ var controllerObj = (function () {
             }
         },
         handleSourceRunDown: function (sources) {
+            bpManager.clearAllBreakpoints();
             for (var len = 0; len < sources.length; ++len) {
                 var source = callHostFunction(hostDebugObject.JsDiagGetSource, sources[len].scriptId);
                 addSourceFile(source.source, source.scriptId);
