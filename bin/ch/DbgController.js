@@ -393,7 +393,8 @@ var controllerObj = (function () {
         function GetChildrens(obj, level) {
             var retArray = {};
             for (var i = 0; i < obj.length; ++i) {
-                retArray[obj[i].name] = GetChild(obj[i], level);
+                var propName = (obj[i].name == "__proto__") ? "#__proto__" : obj[i].name;
+                retArray[propName] = GetChild(obj[i], level);
             }
 
             return retArray;
