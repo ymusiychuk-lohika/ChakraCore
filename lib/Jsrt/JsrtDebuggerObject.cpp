@@ -271,6 +271,7 @@ Js::DynamicObject * JsrtDebuggerStackFrame::GetLocalsObject()
 
     /*
         {
+            "thisObject" : {},
             "exception" : {},
             "arguments" : {},
             "returnValue" : {},
@@ -311,6 +312,23 @@ Js::DynamicObject * JsrtDebuggerStackFrame::GetLocalsObject()
 
         if (localsWalker != nullptr)
         {
+            // If 'this' is available add 'thisObject'
+            Js::ResolvedObject thisResolvedObject;
+            {
+                ENFORCE_ENTRYEXITRECORD_HASCALLER(scriptContext);
+                thisResolvedObject.obj = this->stackFrame->GetThisFromFrame(&thisResolvedObject.address, localsWalker);
+            }
+            if (thisResolvedObject.obj != nullptr)
+            {
+                thisResolvedObject.scriptContext = scriptContext;
+                thisResolvedObject.name = _u("this");
+                thisResolvedObject.typeId = Js::JavascriptOperators::GetTypeId(thisResolvedObject.obj);
+                JsrtDebuggerObjectBase::CreateDebuggerObject<JsrtDebuggerObjectProperty>(this->debuggerObjectsManager, thisResolvedObject, this->stackFrame->GetScriptContext(), [&](Js::Var marshaledObj)
+                {
+                    JsrtDebugUtils::AddPropertyToObject(propertiesObject, JsrtDebugPropertyId::thisObject, marshaledObj, scriptContext);
+                });
+            }
+
             ulong totalProperties = localsWalker->GetChildrenCount();
             if (totalProperties > 0)
             {
@@ -318,6 +336,7 @@ Js::DynamicObject * JsrtDebuggerStackFrame::GetLocalsObject()
                 Js::ResolvedObject resolvedObject;
                 resolvedObject.scriptContext = this->stackFrame->GetScriptContext();
 
+                // If we have a exception add 'exception'
                 if (Js::VariableWalkerBase::GetExceptionObject(index, this->stackFrame, &resolvedObject))
                 {
                     JsrtDebuggerObjectBase::CreateDebuggerObject<JsrtDebuggerObjectProperty>(this->debuggerObjectsManager, resolvedObject, scriptContext, [&](Js::Var marshaledObj)
@@ -326,6 +345,7 @@ Js::DynamicObject * JsrtDebuggerStackFrame::GetLocalsObject()
                     });
                 }
 
+                // If user have not explicitly defined 'arguments' add 'arguments'
                 if (localsWalker->HasUserNotDefinedArguments() && localsWalker->CreateArgumentsObject(&resolvedObject))
                 {
                     JsrtDebuggerObjectBase::CreateDebuggerObject<JsrtDebuggerObjectProperty>(this->debuggerObjectsManager, resolvedObject, scriptContext, [&](Js::Var marshaledObj)
@@ -336,6 +356,7 @@ Js::DynamicObject * JsrtDebuggerStackFrame::GetLocalsObject()
 
                 Js::ReturnedValueList *returnedValueList = this->stackFrame->GetScriptContext()->GetDebugContext()->GetProbeContainer()->GetReturnedValueList();
 
+                // If we have return value(s) add them to 'returnValue' or 'functionCallsReturn'
                 if (returnedValueList != nullptr && returnedValueList->Count() > 0 && this->stackFrame->IsTopFrame())
                 {
                     for (int i = 0; i < returnedValueList->Count(); ++i)
@@ -369,6 +390,7 @@ Js::DynamicObject * JsrtDebuggerStackFrame::GetLocalsObject()
                     }
                 }
 
+                // Add all locals variable(s) available under 'locals'
                 ulong localsCount = localsWalker->GetLocalVariablesCount();
                 for (ulong i = 0; i < localsCount; ++i)
                 {
@@ -384,7 +406,7 @@ Js::DynamicObject * JsrtDebuggerStackFrame::GetLocalsObject()
                     });
                 }
 
-
+                // Add all variable(s) captured under 'scopes'
                 index = 0;
                 BOOL foundGroup = TRUE;
                 while (foundGroup)
@@ -403,6 +425,7 @@ Js::DynamicObject * JsrtDebuggerStackFrame::GetLocalsObject()
                     }
                 }
 
+                // Add globals handle
                 if (localsWalker->GetGlobalsObject(&resolvedObject))
                 {
                     JsrtDebuggerObjectBase::CreateDebuggerObject<JsrtDebuggerObjectGlobalsNode>(this->debuggerObjectsManager, resolvedObject, scriptContext, [&](Js::Var marshaledObj)

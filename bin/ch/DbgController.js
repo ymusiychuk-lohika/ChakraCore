@@ -558,7 +558,7 @@ var controllerObj = (function () {
 
                 if (expandLevel >= 0) {
                     var localsJSON = {};
-                    ["exception", "arguments", "returnValue"].forEach(function (name) {
+                    ["thisObject", "exception", "arguments", "returnValue"].forEach(function (name) {
                         if (name in stackProperties) {
                             var stackObject = stackProperties[name];
                             localsJSON[stackObject.name] = GetChild(stackObject, expandLevel - 1);

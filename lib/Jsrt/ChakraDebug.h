@@ -397,6 +397,14 @@
     /// <remarks>
     ///     <para>
     ///     {
+    ///         "thisObject": {
+    ///             "name": "this",
+    ///             "type" : "object",
+    ///             "className" : "Object",
+    ///             "display" : "{...}",
+    ///             "propertyAttributes" : 1,
+    ///             "handle" : 306
+    ///         },
     ///         "exception" : {
     ///             "name" : "{exception}",
     ///             "type" : "object",
