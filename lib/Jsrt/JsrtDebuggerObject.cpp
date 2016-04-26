@@ -443,6 +443,7 @@ Js::DynamicObject* JsrtDebuggerStackFrame::Evaluate(const char16 * pszSrc, bool 
         {
             BEGIN_JS_RUNTIME_CALL_EX_AND_TRANSLATE_EXCEPTION_AND_ERROROBJECT_TO_HRESULT_NESTED(scriptContext, false)
             {
+                ENFORCE_ENTRYEXITRECORD_HASCALLER(scriptContext);
                 this->stackFrame->EvaluateImmediate(pszSrc, isLibraryCode, &resolvedObject);
             }
             END_JS_RUNTIME_CALL_AND_TRANSLATE_AND_GET_EXCEPTION_AND_ERROROBJECT_TO_HRESULT(hr, scriptContext, exceptionObject);
