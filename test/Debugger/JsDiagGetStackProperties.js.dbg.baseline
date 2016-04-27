@@ -1,25 +1,28 @@
 [
   {
+    "this": "Object {...}",
     "{exception}": "number 1",
     "locals": {
-      "WScript": "Object {...}",
-      "print": "function print",
       "FuncLevel1": "function <large string>",
       "outerFunc1": "function <large string>",
       "globalVar": "undefined undefined"
     }
   },
   {
+    "this": "Object {...}",
     "{exception}": "Error Caught Error",
     "locals": {
-      "WScript": "Object {...}",
-      "print": "function print",
       "FuncLevel1": "function <large string>",
       "outerFunc1": "function <large string>",
       "globalVar": "undefined undefined"
     }
   },
   {
+    "this": {
+      "FuncLevel1": "function <large string>",
+      "outerFunc1": "function <large string>",
+      "globalVar": "Object {...}"
+    },
     "arguments": {
       "#__proto__": "Object {...}",
       "length": "number 0",
@@ -48,6 +51,11 @@
     }
   },
   {
+    "this": {
+      "FuncLevel1": "function <large string>",
+      "outerFunc1": "function <large string>",
+      "globalVar": "Object {...}"
+    },
     "arguments": {
       "#__proto__": "Object {...}",
       "length": "number 0",

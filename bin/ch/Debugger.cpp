@@ -309,6 +309,11 @@ bool Debugger::Initialize()
         this->SetBaseline();
     }
 
+    if (HostConfigFlags::flags.InspectMaxStringLengthIsEnabled)
+    {
+        this->SetInspectMaxStringLength();
+    }
+
     return true;
 }
 
@@ -413,6 +418,25 @@ Error:
     if (file)
         fclose(file);
     return hr == S_OK;
+}
+
+bool Debugger::SetInspectMaxStringLength()
+{
+    Assert(HostConfigFlags::flags.InspectMaxStringLength > 0);
+
+    // Pass in undefined for 'this'
+    JsValueRef undefinedRef;
+    IfJsrtErrorFailLogAndRetFalse(ChakraRTInterface::JsGetUndefinedValue(&undefinedRef));
+
+    JsValueRef maxStringRef;
+    IfJsrtErrorFailLogAndRetFalse(ChakraRTInterface::JsDoubleToNumber(HostConfigFlags::flags.InspectMaxStringLength, &maxStringRef));
+
+    JsValueRef args[] = { undefinedRef, maxStringRef };
+
+    JsValueRef result = JS_INVALID_REFERENCE;
+
+    this->CallFunction(_u("SetInspectMaxStringLength"), args, _countof(args), &result);
+    return false;
 }
 
 bool Debugger::CallFunction(wchar_t const * functionName, JsValueRef * arguments, unsigned short argumentCount, JsValueRef * result)

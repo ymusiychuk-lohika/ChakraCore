@@ -22,6 +22,7 @@ var controllerObj = (function () {
     var _eventLog = [];
     var _baseline = undefined;
     var _exceptionCommands = undefined;
+    var _inspectMaxStringLength = 16;
 
     function internalPrint(str) {
         WScript.Echo(str);
@@ -53,7 +54,92 @@ var controllerObj = (function () {
         return result;
     }
 
+    filterLog = (function () {
+        var parentFilter = { "this": 1, "locals": 1 };
+        var filter = {};
+
+        // Discard all known globals to reduce baseline noise.
+        [
+            "#__proto__",
+            "NaN",
+            "Infinity",
+            "undefined",
+            "eval",
+            "parseInt",
+            "parseFloat",
+            "isNaN",
+            "isFinite",
+            "decodeURI",
+            "decodeURIComponent",
+            "encodeURI",
+            "encodeURIComponent",
+            "escape",
+            "unescape",
+            "CollectGarbage",
+            "Object",
+            "Array",
+            "Boolean",
+            "Symbol",
+            "Proxy",
+            "Reflect",
+            "Promise",
+            "Date",
+            "Function",
+            "Math",
+            "Number",
+            "String",
+            "RegExp",
+            "ArrayBuffer",
+            "DataView",
+            "Int8Array",
+            "Uint8Array",
+            "Uint8ClampedArray",
+            "Int16Array",
+            "Uint16Array",
+            "Int32Array",
+            "Uint32Array",
+            "Float32Array",
+            "Float64Array",
+            "JSON",
+            "Intl",
+            "Map",
+            "Set",
+            "WeakMap",
+            "WeakSet",
+            "Error",
+            "EvalError",
+            "RangeError",
+            "ReferenceError",
+            "SyntaxError",
+            "TypeError",
+            "URIError",
+            "WScript",
+            "print"
+        ].forEach(function (name) {
+            filter[name] = 1;
+        });
+
+        function filterInternal(parentName, obj, depth) {
+            for (var p in obj) {
+                if (parentFilter[parentName] == 1 && filter[p] == 1) {
+                    delete obj[p];
+                } else if (typeof obj[p] == "object") {
+                    filterInternal(p.trim(), obj[p], depth + 1);
+                }
+            }
+        }
+
+        return function (obj) {
+            try {
+                filterInternal("this"/*filter root*/, obj, 0);
+            } catch (ex) {
+                printError("exception during filter: " + ex);
+            }
+        };
+    })();
+
     function recordEvent(json) {
+        filterLog(json);
         _eventLog.push(json);
     }
 
@@ -380,7 +466,7 @@ var controllerObj = (function () {
 
         var value = ("value" in obj) ? obj["value"] : obj["display"];
 
-        if (value && value.length > 16) {
+        if (value && value.length > _inspectMaxStringLength) {
             objectDisplay += " <large string>";
         } else {
             objectDisplay += " " + value;
@@ -400,7 +486,7 @@ var controllerObj = (function () {
             return retArray;
         }
 
-        var retValue = null;
+        var retValue = {};
 
         if ("handle" in obj) {
             if (level >= 0) {
@@ -667,6 +753,9 @@ var controllerObj = (function () {
                 internalPrint(baseline);
             }
         },
+        setInspectMaxStringLength: function (value) {
+            _inspectMaxStringLength = value;
+        },
         getOutputJson: function () {
             return JSON.stringify(_eventLog, undefined, "  ");
         },
@@ -804,6 +893,9 @@ function Verify() {
 }
 function SetBaseline() {
     return controllerObj.setBaseline.apply(controllerObj, arguments);
+}
+function SetInspectMaxStringLength() {
+    return controllerObj.setInspectMaxStringLength.apply(controllerObj, arguments);
 }
 
 // Called from Debugger.cpp to handle JsDiagDebugEvent
