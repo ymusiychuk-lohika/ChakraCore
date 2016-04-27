@@ -187,6 +187,9 @@ bool IsArguments(ParseNode *pnode)
         case knopTry:
         case knopTryCatch:
         case knopTryFinally:
+        case knopArrayPattern:
+        case knopObjectPattern:
+        case knopParamPattern:
             return true;
 
         default:
@@ -3533,7 +3536,7 @@ void ByteCodeGenerator::MapReferencedPropertyIds(FuncInfo * funcInfo)
 #endif
 }
 
-void ByteCodeGenerator::EmitScopeList(ParseNode *pnode, bool breakOnNonFunc)
+void ByteCodeGenerator::EmitScopeList(ParseNode *pnode, ParseNode *breakOnBodyScopeNode)
 {
     while (pnode)
     {
@@ -3578,7 +3581,7 @@ void ByteCodeGenerator::EmitScopeList(ParseNode *pnode, bool breakOnNonFunc)
 
                     // While emitting the functions we have to stop when we see the body scope block.
                     // Otherwise functions defined in the body scope will not be able to get the right references.
-                    this->EmitScopeList(paramBlock->sxBlock.pnodeScopes, true);
+                    this->EmitScopeList(paramBlock->sxBlock.pnodeScopes, pnode->sxFnc.pnodeBodyScope);
                     Assert(this->GetCurrentScope() == paramScope);
                 }
 
@@ -3638,7 +3641,7 @@ void ByteCodeGenerator::EmitScopeList(ParseNode *pnode, bool breakOnNonFunc)
             break;
         }
 
-        if (breakOnNonFunc && pnode && pnode->nop != knopFncDecl)
+        if (breakOnBodyScopeNode != nullptr && breakOnBodyScopeNode == pnode)
         {
             break;
         }

@@ -2711,7 +2711,7 @@ FuncInfo* PostVisitFunction(ParseNode* pnode, ByteCodeGenerator* byteCodeGenerat
                 if (argSym)
                 {
                     Assert(top->bodyScope->GetScopeSlotCount() == 0);
-                    Assert(top->sameNameArgsPlaceHolderSlotCount == 0);
+                    Assert(top->argsPlaceHolderSlotCount == 0);
                     byteCodeGenerator->AssignRegister(argSym);
                     uint i = 0;
                     auto setArgScopeSlot = [&](ParseNode *pnodeArg)
@@ -2721,9 +2721,13 @@ FuncInfo* PostVisitFunction(ParseNode* pnode, ByteCodeGenerator* byteCodeGenerat
                             Symbol* sym = pnodeArg->sxVar.sym;
                             if (sym->GetScopeSlot() != Js::Constants::NoProperty)
                             {
-                                top->sameNameArgsPlaceHolderSlotCount++; // Same name args appeared before
+                                top->argsPlaceHolderSlotCount++; // Same name args appeared before
                             }
                             sym->SetScopeSlot(i);
+                        }
+                        else if (pnodeArg->nop == knopParamPattern)
+                        {
+                            top->argsPlaceHolderSlotCount++;
                         }
                         i++;
                     };
@@ -3020,7 +3024,7 @@ void AddFunctionsToScope(ParseNodePtr scope, ByteCodeGenerator * byteCodeGenerat
 
 template <class PrefixFn, class PostfixFn>
 void VisitNestedScopes(ParseNode* pnodeScopeList, ParseNode* pnodeParent, ByteCodeGenerator* byteCodeGenerator,
-    PrefixFn prefix, PostfixFn postfix, uint *pIndex, bool breakOnNonFnc = false)
+    PrefixFn prefix, PostfixFn postfix, uint *pIndex, bool breakOnBodyScope = false)
 {
     // Visit all scopes nested in this scope before visiting this function's statements. This way we have all the
     // attributes of all the inner functions before we assign registers within this function.
@@ -3247,7 +3251,7 @@ void VisitNestedScopes(ParseNode* pnodeScopeList, ParseNode* pnodeParent, ByteCo
             return;
         }
 
-        if (breakOnNonFnc && pnodeScope->nop != knopFncDecl)
+        if (breakOnBodyScope && pnodeScope == pnodeParent->sxFnc.pnodeBodyScope)
         {
             break;
         }
