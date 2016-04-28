@@ -126,18 +126,6 @@ JsValueRef Debugger::JsDiagGetScripts(JsValueRef callee, bool isConstructCall, J
     return sourcesList;
 }
 
-JsValueRef Debugger::JsDiagGetFunctionPosition(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState)
-{
-    JsValueRef functionInfo = JS_INVALID_REFERENCE;
-
-    if (argumentCount > 1)
-    {
-        IfJsErrorFailLogAndRet(ChakraRTInterface::JsDiagGetFunctionPosition(arguments[0], &functionInfo));
-    }
-
-    return functionInfo;
-}
-
 JsValueRef Debugger::JsDiagGetStackProperties(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState)
 {
     JsValueRef properties = JS_INVALID_REFERENCE;
@@ -330,7 +318,6 @@ bool Debugger::InstallDebugCallbacks(JsValueRef hostDebugObject)
     IfFalseGo(WScriptJsrt::InstallObjectsOnObject(hostDebugObject, _u("JsDiagGetBreakOnException"), Debugger::JsDiagGetBreakOnException));
     IfFalseGo(WScriptJsrt::InstallObjectsOnObject(hostDebugObject, _u("JsDiagSetStepType"), Debugger::JsDiagSetStepType));
     IfFalseGo(WScriptJsrt::InstallObjectsOnObject(hostDebugObject, _u("JsDiagGetScripts"), Debugger::JsDiagGetScripts));
-    IfFalseGo(WScriptJsrt::InstallObjectsOnObject(hostDebugObject, _u("JsDiagGetFunctionPosition"), Debugger::JsDiagGetFunctionPosition));
     IfFalseGo(WScriptJsrt::InstallObjectsOnObject(hostDebugObject, _u("JsDiagGetStackProperties"), Debugger::JsDiagGetStackProperties));
     IfFalseGo(WScriptJsrt::InstallObjectsOnObject(hostDebugObject, _u("JsDiagGetProperties"), Debugger::JsDiagGetProperties));
     IfFalseGo(WScriptJsrt::InstallObjectsOnObject(hostDebugObject, _u("JsDiagGetObjectFromHandle"), Debugger::JsDiagGetObjectFromHandle));
@@ -457,6 +444,21 @@ bool Debugger::CallFunction(wchar_t const * functionName, JsValueRef * arguments
 
     // Call the function
     IfJsrtErrorFailLogAndRetFalse(ChakraRTInterface::JsCallFunction(targetFunc, arguments, argumentCount, result));
+
+    return true;
+}
+
+bool Debugger::DumpFunctionInfo(JsValueRef functionInfo)
+{
+    // Pass in undefined for 'this'
+    JsValueRef undefinedRef;
+    IfJsrtErrorFailLogAndRetFalse(ChakraRTInterface::JsGetUndefinedValue(&undefinedRef));
+
+    JsValueRef args[] = { undefinedRef, functionInfo };
+
+    JsValueRef result = JS_INVALID_REFERENCE;
+
+    this->CallFunction(_u("DumpFunctionInfo"), args, _countof(args), &result);
 
     return true;
 }

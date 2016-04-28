@@ -265,10 +265,8 @@ Js::DynamicObject * JsrtDebuggerStackFrame::GetJSONObject(Js::ScriptContext* scr
     return stackTraceObject;
 }
 
-Js::DynamicObject * JsrtDebuggerStackFrame::GetLocalsObject()
+Js::DynamicObject * JsrtDebuggerStackFrame::GetLocalsObject(Js::ScriptContext* scriptContext)
 {
-    Js::ScriptContext* scriptContext = this->stackFrame->GetScriptContext();
-
     /*
         {
             "thisObject" : {},
@@ -454,22 +452,22 @@ Js::DynamicObject * JsrtDebuggerStackFrame::GetLocalsObject()
     return propertiesObject;
 }
 
-Js::DynamicObject* JsrtDebuggerStackFrame::Evaluate(const char16 * pszSrc, bool isLibraryCode)
+Js::DynamicObject* JsrtDebuggerStackFrame::Evaluate(Js::ScriptContext* scriptContext, const char16 * pszSrc, bool isLibraryCode)
 {
     Js::DynamicObject* evalResult = nullptr;
     if (this->stackFrame != nullptr)
     {
         Js::ResolvedObject resolvedObject;
         HRESULT hr = S_OK;
-        Js::ScriptContext* scriptContext = this->stackFrame->GetScriptContext();
+        Js::ScriptContext* frameScriptContext = this->stackFrame->GetScriptContext();
         Js::JavascriptExceptionObject *exceptionObject = nullptr;
         {
-            BEGIN_JS_RUNTIME_CALL_EX_AND_TRANSLATE_EXCEPTION_AND_ERROROBJECT_TO_HRESULT_NESTED(scriptContext, false)
+            BEGIN_JS_RUNTIME_CALL_EX_AND_TRANSLATE_EXCEPTION_AND_ERROROBJECT_TO_HRESULT_NESTED(frameScriptContext, false)
             {
-                ENFORCE_ENTRYEXITRECORD_HASCALLER(scriptContext);
+                ENFORCE_ENTRYEXITRECORD_HASCALLER(frameScriptContext);
                 this->stackFrame->EvaluateImmediate(pszSrc, isLibraryCode, &resolvedObject);
             }
-            END_JS_RUNTIME_CALL_AND_TRANSLATE_AND_GET_EXCEPTION_AND_ERROROBJECT_TO_HRESULT(hr, scriptContext, exceptionObject);
+            END_JS_RUNTIME_CALL_AND_TRANSLATE_AND_GET_EXCEPTION_AND_ERROROBJECT_TO_HRESULT(hr, frameScriptContext, exceptionObject);
         }
         if (resolvedObject.obj == nullptr)
         {
@@ -499,7 +497,7 @@ Js::DynamicObject* JsrtDebuggerStackFrame::Evaluate(const char16 * pszSrc, bool 
             wcscpy_s((WCHAR*)resolvedObject.name, len + 1, pszSrc);
 
             resolvedObject.typeId = Js::JavascriptOperators::GetTypeId(resolvedObject.obj);
-            JsrtDebuggerObjectBase::CreateDebuggerObject<JsrtDebuggerObjectProperty>(this->debuggerObjectsManager, resolvedObject, this->stackFrame->GetScriptContext(), [&](Js::Var marshaledObj)
+            JsrtDebuggerObjectBase::CreateDebuggerObject<JsrtDebuggerObjectProperty>(this->debuggerObjectsManager, resolvedObject, scriptContext, [&](Js::Var marshaledObj)
             {
                 evalResult = (Js::DynamicObject*)marshaledObj;
             });

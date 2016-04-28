@@ -753,6 +753,17 @@ var controllerObj = (function () {
                 internalPrint(baseline);
             }
         },
+        dumpFunctionInfo: function (funcInfo) {
+            if (!funcInfo) {
+                funcInfo = {};
+            }
+            else {
+                funcInfo["fileName"] = filterFileName(funcInfo["fileName"]);
+            }
+            recordEvent({
+                'functionInfo': funcInfo
+            });
+        },
         setInspectMaxStringLength: function (value) {
             _inspectMaxStringLength = value;
         },
@@ -871,6 +882,7 @@ function dumpBreak() {
 function dumpSourceList() {
     controllerObj.pushCommand(controllerObj.debuggerCommands.dumpSourceList, arguments);
 }
+
 // Start internal tracing. E.g.: /**bp:trace(TRACE_COMMANDS)**/
 function trace() {
     controllerObj.pushCommand(controllerObj.debuggerCommands.trace, arguments);
@@ -897,6 +909,10 @@ function SetBaseline() {
 function SetInspectMaxStringLength() {
     return controllerObj.setInspectMaxStringLength.apply(controllerObj, arguments);
 }
+function DumpFunctionInfo() {
+    return controllerObj.dumpFunctionInfo.apply(controllerObj, arguments);
+}
+
 
 // Called from Debugger.cpp to handle JsDiagDebugEvent
 function HandleDebugEvent() {

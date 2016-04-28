@@ -182,17 +182,15 @@ CHAKRA_API JsDiagGetScripts(
 
         Js::JavascriptArray* scripts = jsrtDebugManager->GetScripts(scriptContext);
 
-        if (scripts == nullptr)
+        if (scripts != nullptr)
         {
-            return JsErrorDiagUnableToPerformAction;
+            *scriptsArray = scripts;
+            return JsNoError;
         }
 
-        *scriptsArray = Js::CrossSite::MarshalVar(scriptContext, scripts);
-
-        return JsNoError;
+        return JsErrorDiagUnableToPerformAction;
     });
 }
-
 
 CHAKRA_API JsDiagGetSource(
     _In_ unsigned int scriptId,
@@ -210,19 +208,17 @@ CHAKRA_API JsDiagGetSource(
 
         VALIDATE_IS_DEBUGGING(jsrtDebugManager);
 
-        Js::DynamicObject* sourceObject = jsrtDebugManager->GetSource(scriptId);
+        Js::DynamicObject* sourceObject = jsrtDebugManager->GetSource(scriptContext, scriptId);
 
-        if (sourceObject == nullptr)
+        if (sourceObject != nullptr)
         {
-            return JsErrorInvalidArgument;
+            *source = sourceObject;
+            return JsNoError;
         }
 
-        *source = Js::CrossSite::MarshalVar(scriptContext, sourceObject);
-
-        return JsNoError;
+        return JsErrorInvalidArgument;
     });
 }
-
 
 CHAKRA_API JsDiagRequestAsyncBreak(
     _In_ JsRuntimeHandle runtimeHandle)
@@ -248,13 +244,14 @@ CHAKRA_API JsDiagRequestAsyncBreak(
     });
 }
 
-
 CHAKRA_API JsDiagGetBreakpoints(
     _Out_ JsValueRef *breakpoints)
 {
     return GlobalAPIWrapper([&]() -> JsErrorCode {
 
         PARAM_NOT_NULL(breakpoints);
+
+        *breakpoints = JS_INVALID_REFERENCE;
 
         JsrtContext *currentContext = JsrtContext::GetCurrent();
 
@@ -333,22 +330,20 @@ CHAKRA_API JsDiagSetBreakpoint(
         {
             JsrtDebugManager* jsrtDebugManager = runtime->GetJsrtDebugManager();
 
-            Js::DynamicObject* bpObject = jsrtDebugManager->SetBreakPoint(utf8SourceInfo, lineNumber, columnNumber);
+            Js::DynamicObject* bpObject = jsrtDebugManager->SetBreakPoint(currentContext->GetScriptContext(), utf8SourceInfo, lineNumber, columnNumber);
 
             if(bpObject != nullptr)
             {
-                *breakPoint = Js::CrossSite::MarshalVar(currentContext->GetScriptContext(), bpObject);
+                *breakPoint = bpObject;
                 return JsNoError;
             }
-            else
-            {
-                return JsErrorDiagUnableToPerformAction;
-            }
+
+            return JsErrorDiagUnableToPerformAction;
         }
+
         return JsErrorDiagObjectNotFound;
     });
 }
-
 
 CHAKRA_API JsDiagRemoveBreakpoint(
     _In_ unsigned int breakpointId)
@@ -408,6 +403,8 @@ CHAKRA_API JsDiagGetBreakOnException(
         VALIDATE_INCOMING_RUNTIME_HANDLE(runtimeHandle);
 
         PARAM_NOT_NULL(exceptionAttributes);
+
+        *exceptionAttributes = JsDiagBreakOnExceptionAttributeNone;
 
         JsrtRuntime * runtime = JsrtRuntime::FromHandle(runtimeHandle);
 
@@ -484,7 +481,7 @@ CHAKRA_API JsDiagGetFunctionPosition(
 
                 if (functionBody->GetLineCharOffsetFromStartChar(startOffset, &firstStatementLine, &firstStatementColumn))
                 {
-                    Js::DynamicObject* funcInfoObject = scriptContext->GetLibrary()->CreateObject();
+                    Js::DynamicObject* funcInfoObject = (Js::DynamicObject*)Js::CrossSite::MarshalVar(utf8SourceInfo->GetScriptContext(), scriptContext->GetLibrary()->CreateObject());
 
                     if (funcInfoObject != nullptr)
                     {
@@ -496,6 +493,7 @@ CHAKRA_API JsDiagGetFunctionPosition(
                         JsrtDebugUtils::AddPropertyToObject(funcInfoObject, JsrtDebugPropertyId::firstStatementColumn, firstStatementColumn, scriptContext);
 
                         *functionInfo = funcInfoObject;
+
                         return JsNoError;
                     }
                 }
@@ -506,11 +504,11 @@ CHAKRA_API JsDiagGetFunctionPosition(
     });
 }
 
-
 CHAKRA_API JsDiagGetStackTrace(
     _Out_ JsValueRef *stackTrace)
 {
     return ContextAPIWrapper<false>([&](Js::ScriptContext *scriptContext) -> JsErrorCode {
+
         PARAM_NOT_NULL(stackTrace);
 
         *stackTrace = JS_INVALID_REFERENCE;
@@ -530,12 +528,12 @@ CHAKRA_API JsDiagGetStackTrace(
     });
 }
 
-
 CHAKRA_API JsDiagGetStackProperties(
     _In_ unsigned int stackFrameIndex,
     _Out_ JsValueRef *properties)
 {
     return ContextAPIWrapper<false>([&](Js::ScriptContext *scriptContext) -> JsErrorCode {
+
         PARAM_NOT_NULL(properties);
 
         *properties = JS_INVALID_REFERENCE;
@@ -555,14 +553,15 @@ CHAKRA_API JsDiagGetStackProperties(
             return JsErrorDiagObjectNotFound;
         }
 
-        Js::DynamicObject* localsObject = debuggerStackFrame->GetLocalsObject();
+        Js::DynamicObject* localsObject = debuggerStackFrame->GetLocalsObject(scriptContext);
 
         if (localsObject != nullptr)
         {
-            *properties = Js::CrossSite::MarshalVar(scriptContext, localsObject);
+            *properties = localsObject;
+            return JsNoError;
         }
 
-        return JsNoError;
+        return JsErrorDiagUnableToPerformAction;
     });
 }
 
@@ -574,6 +573,7 @@ CHAKRA_API JsDiagGetProperties(
 {
 
     return ContextAPIWrapper<false>([&](Js::ScriptContext *scriptContext) -> JsErrorCode {
+
         PARAM_NOT_NULL(propertiesObject);
 
         *propertiesObject = JS_INVALID_REFERENCE;
@@ -594,6 +594,7 @@ CHAKRA_API JsDiagGetProperties(
         }
 
         Js::DynamicObject* properties = debuggerObject->GetChildrens(scriptContext, fromCount, totalCount);
+
         if (properties != nullptr)
         {
             *propertiesObject = properties;
@@ -604,12 +605,12 @@ CHAKRA_API JsDiagGetProperties(
     });
 }
 
-
 CHAKRA_API JsDiagGetObjectFromHandle(
     _In_ unsigned int objectHandle,
     _Out_ JsValueRef *handleObject)
 {
     return ContextAPIWrapper<false>([&](Js::ScriptContext *scriptContext) -> JsErrorCode {
+
         PARAM_NOT_NULL(handleObject);
 
         *handleObject = JS_INVALID_REFERENCE;
@@ -668,13 +669,14 @@ CHAKRA_API JsDiagEvaluate(
             return JsErrorDiagObjectNotFound;
         }
 
-        Js::DynamicObject* result = debuggerStackFrame->Evaluate(expression, false);
+        Js::DynamicObject* result = debuggerStackFrame->Evaluate(scriptContext, expression, false);
 
         if (result != nullptr)
         {
-            *evalResult = Js::CrossSite::MarshalVar(scriptContext, result);
+            *evalResult = result;
+            return JsNoError;
         }
 
-        return JsNoError;
+        return JsErrorDiagUnableToPerformAction;
     });
 }

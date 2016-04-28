@@ -32,12 +32,12 @@ public:
 
     Js::JavascriptArray* GetScripts(Js::ScriptContext* scriptContext);
     Js::DynamicObject* GetScript(Js::Utf8SourceInfo* utf8SourceInfo);
-    Js::DynamicObject* GetSource(uint scriptId);
+    Js::DynamicObject* GetSource(Js::ScriptContext* scriptContext, uint scriptId);
 
     Js::JavascriptArray* GetStackFrames(Js::ScriptContext* scriptContext);
     bool TryGetFrameObjectFromFrameIndex(Js::ScriptContext *scriptContext, uint frameIndex, JsrtDebuggerStackFrame ** debuggerStackFrame);
 
-    Js::DynamicObject* SetBreakPoint(Js::Utf8SourceInfo* utf8SourceInfo, UINT lineNumber, UINT columnNumber);
+    Js::DynamicObject* SetBreakPoint(Js::ScriptContext* scriptContext, Js::Utf8SourceInfo* utf8SourceInfo, UINT lineNumber, UINT columnNumber);
     void GetBreakpoints(Js::JavascriptArray** bpsArray, Js::ScriptContext* scriptContext);
 
     JsrtDebuggerObjectsManager* GetDebuggerObjectsManager();

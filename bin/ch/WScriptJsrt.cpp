@@ -511,6 +511,26 @@ Error:
     }
     return JS_INVALID_REFERENCE;
 }
+JsValueRef WScriptJsrt::DumpFunctionInfoCallback(JsValueRef callee, bool isConstructCall, JsValueRef * arguments, unsigned short argumentCount, void * callbackState)
+{
+    JsValueRef functionInfo = JS_INVALID_REFERENCE;
+
+    if (argumentCount > 1)
+    {
+        if (ChakraRTInterface::JsDiagGetFunctionPosition(arguments[1], &functionInfo) != JsNoError)
+        {
+            // If we can't get the functionInfo pass undefined
+            IfJsErrorFailLogAndRet(ChakraRTInterface::JsGetUndefinedValue(&functionInfo));
+        }
+
+        if (Debugger::debugger != nullptr)
+        {
+            Debugger::debugger->DumpFunctionInfo(functionInfo);
+        }
+    }
+
+    return JS_INVALID_REFERENCE;
+}
 JsValueRef WScriptJsrt::EmptyCallback(JsValueRef callee, bool isConstructCall, JsValueRef * arguments, unsigned short argumentCount, void * callbackState)
 {
     return JS_INVALID_REFERENCE;
@@ -550,6 +570,7 @@ bool WScriptJsrt::Initialize()
     IfFalseGo(WScriptJsrt::InstallObjectsOnObject(wscript, L"SetTimeout", SetTimeoutCallback));
     IfFalseGo(WScriptJsrt::InstallObjectsOnObject(wscript, L"SetTimeout", SetTimeoutCallback));
     IfFalseGo(WScriptJsrt::InstallObjectsOnObject(wscript, L"Detach", DetachCallback));
+    IfFalseGo(WScriptJsrt::InstallObjectsOnObject(wscript, L"DumpFunctionInfo", DumpFunctionInfoCallback));
 
     // ToDo Remove
     IfFalseGo(WScriptJsrt::InstallObjectsOnObject(wscript, L"Edit", EmptyCallback));

@@ -476,15 +476,15 @@ Js::JavascriptArray* JsrtDebugManager::GetScripts(Js::ScriptContext* scriptConte
     return scriptsArray;
 }
 
-Js::DynamicObject* JsrtDebugManager::GetSource(uint scriptId)
+Js::DynamicObject* JsrtDebugManager::GetSource(Js::ScriptContext* scriptContext, uint scriptId)
 {
     Js::Utf8SourceInfo* utf8SourceInfo = nullptr;
 
-    for (Js::ScriptContext *scriptContext = this->threadContext->GetScriptContextList();
-    scriptContext != nullptr && utf8SourceInfo == nullptr && !scriptContext->IsClosed();
-        scriptContext = scriptContext->next)
+    for (Js::ScriptContext *tempScriptContext = this->threadContext->GetScriptContextList();
+    tempScriptContext != nullptr && utf8SourceInfo == nullptr && !tempScriptContext->IsClosed();
+        tempScriptContext = tempScriptContext->next)
     {
-        scriptContext->GetSourceList()->MapUntil([&](int i, RecyclerWeakReference<Js::Utf8SourceInfo>* sourceInfoWeakRef) -> bool
+        tempScriptContext->GetSourceList()->MapUntil([&](int i, RecyclerWeakReference<Js::Utf8SourceInfo>* sourceInfoWeakRef) -> bool
         {
             Js::Utf8SourceInfo* sourceInfo = sourceInfoWeakRef->Get();
             if (sourceInfo != nullptr && sourceInfo->IsInDebugMode() && sourceInfo->GetSourceInfoId() == scriptId)
@@ -500,7 +500,7 @@ Js::DynamicObject* JsrtDebugManager::GetSource(uint scriptId)
 
     if (utf8SourceInfo != nullptr)
     {
-        sourceObject = utf8SourceInfo->GetScriptContext()->GetLibrary()->CreateObject();
+        sourceObject = (Js::DynamicObject*)Js::CrossSite::MarshalVar(utf8SourceInfo->GetScriptContext(), scriptContext->GetLibrary()->CreateObject());
 
         JsrtDebugUtils::AddScriptIdToObject(sourceObject, utf8SourceInfo);
         JsrtDebugUtils::AddFileNameOrScriptTypeToObject(sourceObject, utf8SourceInfo);
@@ -532,7 +532,7 @@ bool JsrtDebugManager::TryGetFrameObjectFromFrameIndex(Js::ScriptContext *script
     return this->stackFrames->TryGetFrameObjectFromFrameIndex(frameIndex, debuggerStackFrame);
 }
 
-Js::DynamicObject* JsrtDebugManager::SetBreakPoint(Js::Utf8SourceInfo* utf8SourceInfo, UINT lineNumber, UINT columnNumber)
+Js::DynamicObject* JsrtDebugManager::SetBreakPoint(Js::ScriptContext* scriptContext, Js::Utf8SourceInfo* utf8SourceInfo, UINT lineNumber, UINT columnNumber)
 {
     Js::DebugDocument* debugDocument = utf8SourceInfo->GetDebugDocument();
     if (debugDocument != nullptr && SUCCEEDED(utf8SourceInfo->EnsureLineOffsetCacheNoThrow()) && lineNumber < utf8SourceInfo->GetLineCount())
@@ -565,9 +565,7 @@ Js::DynamicObject* JsrtDebugManager::SetBreakPoint(Js::Utf8SourceInfo* utf8Sourc
 
         probe->GetStatementLocation(&statement);
 
-        Js::ScriptContext* scriptContext = debugDocument->GetUtf8SourceInfo()->GetScriptContext();
-
-        Js::DynamicObject* bpObject = scriptContext->GetLibrary()->CreateObject();
+        Js::DynamicObject* bpObject = (Js::DynamicObject*)Js::CrossSite::MarshalVar(debugDocument->GetUtf8SourceInfo()->GetScriptContext(), scriptContext->GetLibrary()->CreateObject());
 
         JsrtDebugUtils::AddPropertyToObject(bpObject, JsrtDebugPropertyId::breakpointId, probe->GetId(), scriptContext);
         JsrtDebugUtils::AddLineColumnToObject(bpObject, statement.function, statement.bytecodeSpan.begin);
