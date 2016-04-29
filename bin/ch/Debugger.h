@@ -21,12 +21,14 @@ public:
     bool CompareOrWriteBaselineFile(LPCWSTR fileName);
     bool SourceRunDown();
     bool DumpFunctionInfo(JsValueRef functionInfo);
+    bool IsDetached() const { return isDetached; }
 private:
     Debugger(JsRuntimeHandle runtime);
     ~Debugger();
     bool Initialize();
     JsRuntimeHandle m_runtime;
     JsContextRef m_context;
+    bool isDetached;
     bool InstallDebugCallbacks(JsValueRef hostDebugObject);
     bool SetBaseline();
     bool SetInspectMaxStringLength();
@@ -37,7 +39,6 @@ public:
     static JsValueRef CALLBACK JsDiagGetSource(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
     static JsValueRef CALLBACK JsDiagSetBreakpoint(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
     static JsValueRef CALLBACK JsDiagGetStackTrace(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
-    static JsValueRef CALLBACK JsDiagRequestAsyncBreak(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
     static JsValueRef CALLBACK JsDiagGetBreakpoints(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
     static JsValueRef CALLBACK JsDiagRemoveBreakpoint(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
     static JsValueRef CALLBACK JsDiagSetBreakOnException(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);

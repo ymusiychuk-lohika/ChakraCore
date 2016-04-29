@@ -52,12 +52,6 @@ JsValueRef Debugger::JsDiagGetStackTrace(JsValueRef callee, bool isConstructCall
     return stackInfo;
 }
 
-JsValueRef Debugger::JsDiagRequestAsyncBreak(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState)
-{
-    IfJsErrorFailLogAndRet(ChakraRTInterface::JsDiagRequestAsyncBreak(Debugger::GetRuntime()));
-    return JS_INVALID_REFERENCE;
-}
-
 JsValueRef Debugger::JsDiagGetBreakpoints(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState)
 {
     JsValueRef breakpoints = JS_INVALID_REFERENCE;
@@ -194,6 +188,7 @@ Debugger::Debugger(JsRuntimeHandle runtime)
 {
     this->m_runtime = runtime;
     this->m_context = JS_INVALID_REFERENCE;
+    this->isDetached = true;
 }
 
 Debugger::~Debugger()
@@ -281,7 +276,6 @@ bool Debugger::InstallDebugCallbacks(JsValueRef hostDebugObject)
     IfFalseGo(WScriptJsrt::InstallObjectsOnObject(hostDebugObject, _u("JsDiagGetSource"), Debugger::JsDiagGetSource));
     IfFalseGo(WScriptJsrt::InstallObjectsOnObject(hostDebugObject, _u("JsDiagSetBreakpoint"), Debugger::JsDiagSetBreakpoint));
     IfFalseGo(WScriptJsrt::InstallObjectsOnObject(hostDebugObject, _u("JsDiagGetStackTrace"), Debugger::JsDiagGetStackTrace));
-    IfFalseGo(WScriptJsrt::InstallObjectsOnObject(hostDebugObject, _u("JsDiagRequestAsyncBreak"), Debugger::JsDiagRequestAsyncBreak));
     IfFalseGo(WScriptJsrt::InstallObjectsOnObject(hostDebugObject, _u("JsDiagGetBreakpoints"), Debugger::JsDiagGetBreakpoints));
     IfFalseGo(WScriptJsrt::InstallObjectsOnObject(hostDebugObject, _u("JsDiagRemoveBreakpoint"), Debugger::JsDiagRemoveBreakpoint));
     IfFalseGo(WScriptJsrt::InstallObjectsOnObject(hostDebugObject, _u("JsDiagSetBreakOnException"), Debugger::JsDiagSetBreakOnException));
@@ -422,6 +416,8 @@ bool Debugger::StartDebugging(JsRuntimeHandle runtime)
 {
     IfJsrtErrorFailLogAndRetFalse(ChakraRTInterface::JsDiagStartDebugging(runtime, Debugger::JsDiagDebugEventHandler, this));
 
+    this->isDetached = false;
+
     return true;
 }
 
@@ -431,6 +427,8 @@ bool Debugger::StopDebugging(JsRuntimeHandle runtime)
     IfJsrtErrorFailLogAndRetFalse(ChakraRTInterface::JsDiagStopDebugging(runtime, &callbackState));
 
     Assert(callbackState == this);
+
+    this->isDetached = true;
 
     return true;
 }

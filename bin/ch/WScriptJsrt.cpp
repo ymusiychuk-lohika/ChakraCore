@@ -535,6 +535,20 @@ JsValueRef WScriptJsrt::DumpFunctionInfoCallback(JsValueRef callee, bool isConst
     return JS_INVALID_REFERENCE;
 }
 
+JsValueRef WScriptJsrt::RequestAsyncBreakCallback(JsValueRef callee, bool isConstructCall, JsValueRef * arguments, unsigned short argumentCount, void * callbackState)
+{
+    if (Debugger::debugger != nullptr && !Debugger::debugger->IsDetached())
+    {
+        IfJsErrorFailLogAndRet(ChakraRTInterface::JsDiagRequestAsyncBreak(Debugger::GetRuntime()));
+    }
+    else
+    {
+        Helpers::LogError(_u("RequestAsyncBreak can only be called when debugger is attached"));
+    }
+
+    return JS_INVALID_REFERENCE;
+}
+
 JsValueRef WScriptJsrt::EmptyCallback(JsValueRef callee, bool isConstructCall, JsValueRef * arguments, unsigned short argumentCount, void * callbackState)
 {
     return JS_INVALID_REFERENCE;
@@ -577,6 +591,7 @@ bool WScriptJsrt::Initialize()
     IfFalseGo(WScriptJsrt::InstallObjectsOnObject(wscript, L"SetTimeout", SetTimeoutCallback));
     IfFalseGo(WScriptJsrt::InstallObjectsOnObject(wscript, L"Detach", DetachCallback));
     IfFalseGo(WScriptJsrt::InstallObjectsOnObject(wscript, L"DumpFunctionInfo", DumpFunctionInfoCallback));
+    IfFalseGo(WScriptJsrt::InstallObjectsOnObject(wscript, L"RequestAsyncBreak", RequestAsyncBreakCallback));
 
     // ToDo Remove
     IfFalseGo(WScriptJsrt::InstallObjectsOnObject(wscript, L"Edit", EmptyCallback));
