@@ -28,10 +28,10 @@ private:
     JsRuntimeHandle m_runtime;
     JsContextRef m_context;
     bool InstallDebugCallbacks(JsValueRef hostDebugObject);
-    bool InstallHostCallback(JsValueRef hostDebugObject, const wchar_t *name, JsNativeFunction nativeFunction);
     bool SetBaseline();
     bool SetInspectMaxStringLength();
-    bool CallFunction(wchar_t const * functionName, JsValueRef* arguments, unsigned short argumentCount, JsValueRef *result);
+    bool CallFunction(char16 const * functionName, JsValueRef *result, JsValueRef arg1 = JS_INVALID_REFERENCE, JsValueRef arg2 = JS_INVALID_REFERENCE);
+    bool CallFunctionNoResult(char16 const * functionName, JsValueRef arg1 = JS_INVALID_REFERENCE, JsValueRef arg2 = JS_INVALID_REFERENCE);
 public:
     static void CALLBACK JsDiagDebugEventHandler(_In_ JsDiagDebugEvent debugEvent, _In_ JsValueRef eventData, _In_opt_ void* callbackState);
     static JsValueRef CALLBACK JsDiagGetSource(JsValueRef callee, bool isConstructCall, JsValueRef *arguments, unsigned short argumentCount, void *callbackState);
