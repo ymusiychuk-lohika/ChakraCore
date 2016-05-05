@@ -548,7 +548,9 @@ Js::DynamicObject * JsrtDebuggerObjectProperty::GetJSONObject(Js::ScriptContext*
     {
         propertyObject = scriptContext->GetLibrary()->CreateObject();
 
-        JsrtDebugUtils::AddPropertyToObject(propertyObject, JsrtDebugPropertyId::name, objectDisplayRef->Name(), scriptContext);
+        LPCWSTR name = objectDisplayRef->Name();
+
+        JsrtDebugUtils::AddPropertyToObject(propertyObject, JsrtDebugPropertyId::name, name, wcslen(name), scriptContext);
 
         JsrtDebugUtils::AddPropertyType(propertyObject, objectDisplayRef, scriptContext); // Will add type, value, display, className, propertyAttributes
 
@@ -686,8 +688,8 @@ Js::DynamicObject * JsrtDebuggerObjectFunction::GetJSONObject(Js::ScriptContext 
     JsrtDebugUtils::AddScriptIdToObject(functionObject, this->functionBody->GetUtf8SourceInfo());
     JsrtDebugUtils::AddPropertyToObject(functionObject, JsrtDebugPropertyId::line, this->functionBody->GetLineNumber(), scriptContext);
     JsrtDebugUtils::AddPropertyToObject(functionObject, JsrtDebugPropertyId::column, this->functionBody->GetColumnNumber(), scriptContext);
-    JsrtDebugUtils::AddPropertyToObject(functionObject, JsrtDebugPropertyId::name, this->functionBody->GetDisplayName(), scriptContext);
-    JsrtDebugUtils::AddPropertyToObject(functionObject, JsrtDebugPropertyId::type, scriptContext->GetLibrary()->GetFunctionTypeDisplayString()->GetSz(), scriptContext);
+    JsrtDebugUtils::AddPropertyToObject(functionObject, JsrtDebugPropertyId::name, this->functionBody->GetDisplayName(), this->functionBody->GetDisplayNameLength(), scriptContext);
+    JsrtDebugUtils::AddPropertyToObject(functionObject, JsrtDebugPropertyId::type, scriptContext->GetLibrary()->GetFunctionTypeDisplayString(), scriptContext);
     JsrtDebugUtils::AddPropertyToObject(functionObject, JsrtDebugPropertyId::handle, this->GetHandle(), scriptContext);
 
     return functionObject;
