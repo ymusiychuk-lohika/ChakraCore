@@ -3,9 +3,9 @@
     "functionInfo": {
       "scriptId": 2,
       "fileName": "jsdiaggetfunctionposition.js",
-      "line": 3,
+      "line": 8,
       "column": 1,
-      "firstStatementLine": 3,
+      "firstStatementLine": 8,
       "firstStatementColumn": 2
     }
   },
@@ -13,9 +13,9 @@
     "functionInfo": {
       "scriptId": 2,
       "fileName": "jsdiaggetfunctionposition.js",
-      "line": 10,
+      "line": 15,
       "column": 10,
-      "firstStatementLine": 10,
+      "firstStatementLine": 15,
       "firstStatementColumn": 4
     }
   },
@@ -45,9 +45,9 @@
     "functionInfo": {
       "scriptId": 2,
       "fileName": "jsdiaggetfunctionposition.js",
-      "line": 22,
+      "line": 27,
       "column": 34,
-      "firstStatementLine": 23,
+      "firstStatementLine": 28,
       "firstStatementColumn": 2
     }
   },
