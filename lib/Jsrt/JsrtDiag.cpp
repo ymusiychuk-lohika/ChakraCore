@@ -669,7 +669,13 @@ CHAKRA_API JsDiagEvaluate(
             return JsErrorDiagObjectNotFound;
         }
 
-        Js::DynamicObject* result = debuggerStackFrame->Evaluate(scriptContext, expression, wcslen(expression), false);
+        size_t len = wcslen(expression);
+        if (len != static_cast<int>(len))
+        {
+            return JsErrorInvalidArgument;
+        }
+
+        Js::DynamicObject* result = debuggerStackFrame->Evaluate(scriptContext, expression, static_cast<int>(len), false);
 
         if (result != nullptr)
         {

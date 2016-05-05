@@ -302,7 +302,8 @@ bool Debugger::SetBaseline()
     {
         Helpers::LogError(_u("opening baseline file '%s'"), HostConfigFlags::flags.dbgbaseline);
     }
-    else
+
+    if(file != nullptr)
     {
         int fileSize = _filelength(_fileno(file));
         if (fileSize <= MAX_BASELINE_SIZE)
@@ -489,14 +490,17 @@ bool Debugger::CompareOrWriteBaselineFile(LPCWSTR fileName)
             return false;
         }
 
-        int countWritten = static_cast<int>(fwrite(baselineDataANSI, sizeof(baselineDataANSI[0]), strlen(baselineDataANSI), file));
-        if (countWritten != (int)strlen(baselineDataANSI))
+        if (file != nullptr)
         {
-            Assert(false);
-            return false;
-        }
+            int countWritten = static_cast<int>(fwrite(baselineDataANSI, sizeof(baselineDataANSI[0]), strlen(baselineDataANSI), file));
+            if (countWritten != (int)strlen(baselineDataANSI))
+            {
+                Assert(false);
+                return false;
+            }
 
-        fclose(file);
+            fclose(file);
+        }
 
         if (!HostConfigFlags::flags.dbgbaselineIsEnabled)
         {
