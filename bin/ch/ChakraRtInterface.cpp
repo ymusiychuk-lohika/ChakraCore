@@ -130,7 +130,6 @@ HINSTANCE ChakraRTInterface::LoadChakraDll(ArgInfo* argInfo)
     m_jsApiHooks.pfJsrtDiagGetObjectFromHandle = (JsAPIHooks::JsrtDiagGetObjectFromHandle)GetChakraCoreSymbol(library, "JsDiagGetObjectFromHandle");
     m_jsApiHooks.pfJsrtDiagEvaluate = (JsAPIHooks::JsrtDiagEvaluate)GetChakraCoreSymbol(library, "JsDiagEvaluate");
 
-#if DBG || ENABLE_DEBUG_CONFIG_OPTIONS
     m_jsApiHooks.pfJsrtTTDCreateRecordRuntime = (JsAPIHooks::JsrtTTDCreateRecordRuntimePtr)GetChakraCoreSymbol(library, "JsTTDCreateRecordRuntime");
     m_jsApiHooks.pfJsrtTTDCreateDebugRuntime = (JsAPIHooks::JsrtTTDCreateDebugRuntimePtr)GetChakraCoreSymbol(library, "JsTTDCreateDebugRuntime");
     m_jsApiHooks.pfJsrtTTDCreateContext = (JsAPIHooks::JsrtTTDCreateContextPtr)GetChakraCoreSymbol(library, "JsTTDCreateContext");
@@ -154,31 +153,6 @@ HINSTANCE ChakraRTInterface::LoadChakraDll(ArgInfo* argInfo)
     m_jsApiHooks.pfJsrtTTDPrepContextsForTopLevelEventMove = (JsAPIHooks::JsrtTTDPrepContextsForTopLevelEventMovePtr)GetChakraCoreSymbol(library, "JsTTDPrepContextsForTopLevelEventMove");
     m_jsApiHooks.pfJsrtTTDMoveToTopLevelEvent = (JsAPIHooks::JsrtTTDMoveToTopLevelEventPtr)GetChakraCoreSymbol(library, "JsTTDMoveToTopLevelEvent");
     m_jsApiHooks.pfJsrtTTDReplayExecution = (JsAPIHooks::JsrtTTDReplayExecutionPtr)GetChakraCoreSymbol(library, "JsTTDReplayExecution");
-#else
-    m_jsApiHooks.pfJsrtTTDCreateRecordRuntime = nullptr;
-    m_jsApiHooks.pfJsrtTTDCreateDebugRuntime = nullptr;
-    m_jsApiHooks.pfJsrtTTDCreateContext = nullptr;
-    m_jsApiHooks.pfJsrtTTDRunScript = nullptr;
-    m_jsApiHooks.pfJsrtTTDCallFunction = nullptr;
-
-    m_jsApiHooks.pfJsrtTTDSetDebuggerForReplay = nullptr;
-    m_jsApiHooks.pfJsrtTTDSetIOCallbacks = nullptr;
-
-    m_jsApiHooks.pfJsrtTTDStartTimeTravelRecording = nullptr;
-    m_jsApiHooks.pfJsrtTTDStopTimeTravelRecording = nullptr;
-    m_jsApiHooks.pfJsrtTTDEmitTimeTravelRecording = nullptr;
-
-    m_jsApiHooks.pfJsrtTTDStartTimeTravelDebugging = nullptr;
-    m_jsApiHooks.pfJsrtTTDPauseTimeTravelBeforeRuntimeOperation = nullptr;
-    m_jsApiHooks.pfJsrtTTDReStartTimeTravelAfterRuntimeOperation = nullptr;
-
-    m_jsApiHooks.pfJsrtTTDNotifyHostCallbackCreatedOrCanceled = nullptr;
-    m_jsApiHooks.pfJsrtTTDNotifyYield = nullptr;
-
-    m_jsApiHooks.pfJsrtTTDPrepContextsForTopLevelEventMove = nullptr;
-    m_jsApiHooks.pfJsrtTTDMoveToTopLevelEvent = nullptr;
-    m_jsApiHooks.pfJsrtTTDReplayExecution = nullptr;
-#endif
 
     return library;
 }

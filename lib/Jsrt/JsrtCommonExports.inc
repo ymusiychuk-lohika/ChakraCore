@@ -104,7 +104,6 @@
     JsGetRuntime
     JsIdle
     JsSetPromiseContinuationCallback
-#if DBG || ENABLE_DEBUG_CONFIG_OPTIONS
     JsTTDCreateRecordRuntime
     JsTTDCreateDebugRuntime
     JsTTDCreateContext
@@ -123,4 +122,3 @@
     JsTTDPrepContextsForTopLevelEventMove
     JsTTDMoveToTopLevelEvent
     JsTTDReplayExecution
-#endif

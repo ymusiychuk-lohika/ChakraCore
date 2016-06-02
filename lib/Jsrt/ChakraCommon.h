@@ -2981,8 +2981,6 @@ typedef unsigned char* ChakraBytePtr;
 
     /////////////////////
 
-#if DBG || ENABLE_DEBUG_CONFIG_OPTIONS
-
     /// <summary>
     ///     Given the the uri location specified for the TTD output data, which may be relative or contain other implcit information, 
     ///     convert it into a fully normalized location descriptor. This fiully resolved location will be passed to the later callbacks 
@@ -3292,7 +3290,5 @@ typedef unsigned char* ChakraBytePtr;
     STDAPI_(JsErrorCode)
         JsTTDReplayExecution(
             _Out_ INT64* rootEventTime);
-
-#endif //ENABLE_TTD
 
 #endif // _CHAKRACOMMON_H_

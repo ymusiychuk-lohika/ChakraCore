@@ -3232,8 +3232,6 @@ CHAKRA_API JsRunSerializedScriptWithCallback(_In_ JsSerializedScriptLoadSourceCa
 
 /////////////////////
 
-#if DBG || ENABLE_DEBUG_CONFIG_OPTIONS
-
 STDAPI_(JsErrorCode) JsTTDCreateRecordRuntime(_In_ JsRuntimeAttributes attributes, _In_ wchar_t* infoUri, _In_ UINT32 snapInterval, _In_ UINT32 snapHistoryLength, _In_opt_ JsThreadServiceCallback threadService, _Out_ JsRuntimeHandle *runtime)
 {
     return CreateRuntimeCore(attributes, infoUri, nullptr, snapInterval, snapHistoryLength, threadService, runtime);
@@ -3732,5 +3730,4 @@ STDAPI_(JsErrorCode) JsTTDReplayExecution(INT64* rootEventTime)
 #endif
 }
 
-#endif //ENABLE_TTD
 #endif // _WIN32
