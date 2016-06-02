@@ -4711,7 +4711,7 @@ ThreadWorker( void *arg )
        // Poll for new stuff. If the thread is set to stop, then go away.
 
        // Use DirectoryQueue and schedule each directory on a single thread.
-       pDir = DirectoryTestQueue.GetNextItem_NoBlock(500);
+       pDir = DirectoryTestQueue.GetNextItem_NoBlock(1000);
        if(pDir == NULL)
            break;
 

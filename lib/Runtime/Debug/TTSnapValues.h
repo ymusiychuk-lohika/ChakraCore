@@ -34,6 +34,9 @@ namespace TTD
 
     };
 #else
+    //
+    //TODO: x-plat workaround need to link in with timer when it is done.
+    //
     class TTDTimer
     {
     public:
