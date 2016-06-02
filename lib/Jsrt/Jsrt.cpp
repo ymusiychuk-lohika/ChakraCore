@@ -3229,6 +3229,7 @@ CHAKRA_API JsRunSerializedScriptWithCallback(_In_ JsSerializedScriptLoadSourceCa
 {
     return RunSerializedScriptCore<JsSerializedScriptLoadSourceCallback, JsSerializedScriptUnloadCallback>(nullptr, scriptLoadCallback, scriptUnloadCallback, buffer, sourceContext, sourceUrl, false, result);
 }
+#endif // _WIN32
 
 /////////////////////
 
@@ -3730,4 +3731,3 @@ CHAKRA_API JsTTDReplayExecution(INT64* rootEventTime)
 #endif
 }
 
-#endif // _WIN32
