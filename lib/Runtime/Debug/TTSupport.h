@@ -109,8 +109,8 @@ namespace TTD
 
         ExcludedExecution = 0x20,  //Set when the system is executing code on behalf of the TTD/debugger (so we don't want to record/replay things for it)
 
-		TTDShouldRecordActionMask = (RecordEnabled | ExcludedExecution),
-		TTDShouldDebugActionMask = (DebuggingEnabled | ExcludedExecution)
+        TTDShouldRecordActionMask = (RecordEnabled | ExcludedExecution),
+        TTDShouldDebugActionMask = (DebuggingEnabled | ExcludedExecution)
     };
     DEFINE_ENUM_FLAG_OPERATORS(TTDMode)
 
@@ -831,10 +831,10 @@ namespace TTD
 
         void AddArrayLink()
         {
-            UnorderedArrayListLink* copiedOldBlock = this->m_alloc->SlabAllocateStruct<UnorderedArrayListLink>();
+            UnorderedArrayListLink* copiedOldBlock = this->m_alloc->template SlabAllocateStruct<UnorderedArrayListLink>();
             *copiedOldBlock = this->m_inlineHeadBlock;
 
-            T* newBlockData = this->m_alloc->SlabAllocateFixedSizeArray<T, allocSize>();
+            T* newBlockData = this->m_alloc->template SlabAllocateFixedSizeArray<T, allocSize>();
 
             this->m_inlineHeadBlock.BlockData = newBlockData;
             this->m_inlineHeadBlock.CurrPos = newBlockData;
@@ -847,7 +847,7 @@ namespace TTD
         UnorderedArrayList(SlabAllocator* alloc)
             : m_alloc(alloc)
         {
-            T* newBlockData = this->m_alloc->SlabAllocateFixedSizeArray<T, allocSize>();
+            T* newBlockData = this->m_alloc->template SlabAllocateFixedSizeArray<T, allocSize>();
 
             this->m_inlineHeadBlock.BlockData = newBlockData;
             this->m_inlineHeadBlock.CurrPos = newBlockData;

@@ -169,7 +169,7 @@ namespace TTD
         int64 m_eventTimeCtr;
 
         //A high res timer we can use to extract some diagnostic timing info as we go
-        Js::HiResTimer m_timer;
+        TTDTimer m_timer;
 
         //A counter (per event dispatch) which holds the current value for the function counter
         uint64 m_runningFunctionTimeCtr;

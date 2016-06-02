@@ -10,7 +10,7 @@ namespace TTD
 {
     void SnapShot::EmitSnapshotToFile(FileWriter* writer, ThreadContext* threadContext) const
     {
-        Js::HiResTimer timer;
+        TTDTimer timer;
         double startWrite = timer.Now();
 
         writer->WriteRecordStart();

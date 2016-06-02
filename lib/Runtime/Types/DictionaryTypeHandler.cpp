@@ -2652,7 +2652,7 @@ namespace Js
                 continue;
             }
 
-            uint32 dIndex = descriptor.GetDataPropertyIndex<false>();
+            uint32 dIndex = descriptor.template GetDataPropertyIndex<false>();
             if(dIndex != NoSlots)
             {
                 Js::Var dValue = obj->GetSlot(dIndex);
@@ -2687,7 +2687,7 @@ namespace Js
             DictionaryPropertyDescriptor<T> descriptor = iter.CurrentValue();
             Js::PropertyId pid = iter.CurrentKey()->GetPropertyId();
 
-            uint32 dIndex = descriptor.GetDataPropertyIndex<false>();
+            uint32 dIndex = descriptor.template GetDataPropertyIndex<false>();
             if(dIndex != NoSlots)
             {
                 maxSlot = max(maxSlot, dIndex);

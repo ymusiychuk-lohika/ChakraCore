@@ -57,7 +57,7 @@ namespace TTD
         void EmitSnapshotToFile(FileWriter* writer, ThreadContext* threadContext) const;
         static SnapShot* ParseSnapshotFromFile(FileReader* reader);
 
-        template<typename Fn, typename T, uint32 allocSize>
+        template<typename Fn, typename T, size_t allocSize>
         static void EmitListHelper(Fn emitFunc, const UnorderedArrayList<T, allocSize>& list, FileWriter* snapwriter)
         {
             snapwriter->WriteLengthValue(list.Count(), NSTokens::Separator::CommaAndBigSpaceSeparator);
@@ -73,7 +73,7 @@ namespace TTD
             snapwriter->WriteSequenceEnd(NSTokens::Separator::BigSpaceSeparator);
         }
 
-        template<typename Fn, typename T, uint32 allocSize>
+        template<typename Fn, typename T, size_t allocSize>
         static void ParseListHelper(Fn parseFunc, UnorderedArrayList<T, allocSize>& list, FileReader* snapreader, SlabAllocator& alloc)
         {
             uint32 count = snapreader->ReadLengthValue(true);
@@ -86,7 +86,7 @@ namespace TTD
             snapreader->ReadSequenceEnd();
         }
 
-        template<typename Fn, typename T, typename U, uint32 allocSize>
+        template<typename Fn, typename T, typename U, size_t allocSize>
         static void ParseListHelper_WMap(Fn parseFunc, UnorderedArrayList<T, allocSize>& list, FileReader* snapreader, SlabAllocator& alloc, const TTDIdentifierDictionary<TTD_PTR_ID, U>& infoMap)
         {
             uint32 count = snapreader->ReadLengthValue(true);

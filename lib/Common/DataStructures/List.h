@@ -323,7 +323,7 @@ namespace JsUtil
 
         T& Last()
         {
-            Assert(count >= 1);
+            Assert(this->count >= 1);
             return this->Item(count - 1);
         }
 

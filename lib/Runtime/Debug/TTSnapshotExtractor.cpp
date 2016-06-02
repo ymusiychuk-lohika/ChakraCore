@@ -355,7 +355,7 @@ namespace TTD
 
     void SnapshotExtractor::DoMarkWalk(const JsUtil::List<Js::Var, HeapAllocator>& roots, const JsUtil::List<Js::ScriptContext*, HeapAllocator>& ctxs, ThreadContext* threadContext)
     {
-        Js::HiResTimer timer;
+        TTDTimer timer;
         double startTime = timer.Now();
 
         for(int32 i = 0; i < roots.Count(); ++i)
@@ -385,7 +385,7 @@ namespace TTD
 
     void SnapshotExtractor::EvacuateMarkedIntoSnapshot(ThreadContext* threadContext, const JsUtil::List<Js::ScriptContext*, HeapAllocator>& ctxs)
     {
-        Js::HiResTimer timer;
+        TTDTimer timer;
         double startTime = timer.Now();
 
         SnapShot* snap = this->m_pendingSnap;

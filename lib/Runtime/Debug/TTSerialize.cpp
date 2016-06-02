@@ -15,8 +15,10 @@ namespace TTD
             LPCWSTR* nameArray = TT_HEAP_ALLOC_ARRAY(LPCWSTR, (uint32)Key::Count);
             size_t* lengthArray = TT_HEAP_ALLOC_ARRAY(size_t, (uint32)Key::Count);
 
-#define ENTRY_SERIALIZE_ENUM(K) { nameArray[(uint32)Key::##K] = __TEXT(#K); lengthArray[(uint32)Key::##K] = wcslen(__TEXT(#K)); }
+#define __STEXT(X) ((const char16*)__TEXT(X))
+#define ENTRY_SERIALIZE_ENUM(K) { nameArray[(uint32)Key::##K] = __STEXT(#K); lengthArray[(uint32)Key::##K] = wcslen(__STEXT(#K)); }
 #include "TTSerializeEnum.h"
+#undef __STEXT
 
             *names = nameArray;
             *lengths = lengthArray;

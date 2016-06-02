@@ -21,7 +21,7 @@ namespace TTD
                     // Do macro fill of wellknown property id set case statements
 #define ENTRY_INTERNAL_SYMBOL(n) case Js::PropertyIds::##n:
 #define ENTRY_SYMBOL(n, d) case Js::PropertyIds::##n:
-#include "Base\JnDirectFields.h"
+#include "Base/JnDirectFields.h"
                     break; //if it is any of the well known symbols then we don't want to do anything since they are created automatically
                 default:
                     newPropertyRecord = InflatePropertyRecord_CreateNew(pRecord, threadContext);

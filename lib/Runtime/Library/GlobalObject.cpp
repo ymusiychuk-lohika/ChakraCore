@@ -1647,7 +1647,7 @@ LHexError:
             //
             //TODO: the host should give us a print callback which we can use here
             //
-            wprintf(L"%ls\n", jsString->GetSz());
+            wprintf(_u("%ls\n"), jsString->GetSz());
         }
 
         return function->GetScriptContext()->GetLibrary()->GetUndefined();

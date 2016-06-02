@@ -9,6 +9,40 @@
 
 namespace TTD
 {
+#ifdef WIN32
+    class TTDTimer
+    {
+    private:
+        Js::HiResTimer m_timer;
+
+    public:
+        TTDTimer()
+            : m_timer()
+        {
+            ;
+        }
+
+        ~TTDTimer()
+        {
+            ;
+        }
+
+        double Now()
+        {
+            return this->m_timer.Now();
+        }
+
+    };
+#else
+    class TTDTimer
+    {
+    public:
+        double Now()
+        {
+            return 0.0;
+        };
+#endif
+
     namespace JsSupport
     {
         //return true if the Var is a tagged number (inline)
