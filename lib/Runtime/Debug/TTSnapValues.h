@@ -40,7 +40,8 @@ namespace TTD
         double Now()
         {
             return 0.0;
-        };
+        }
+    };
 #endif
 
     namespace JsSupport
