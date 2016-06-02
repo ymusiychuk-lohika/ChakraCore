@@ -132,12 +132,16 @@ namespace Js
             //      Since caching may happen differently at record/replay time we need to force this to ensure the log/order is consistent.
             //      Later we may want to optimize by lifting the TTD code from the call and explicitly calling it here (but not the rest of the enumeration work).
             //
+#if ENABLE_TTD
             Js::ScriptContext* actionCtx = this->object->GetScriptContext();
             if(actionCtx->ShouldPerformRecordAction() | actionCtx->ShouldPerformDebugAction())
             {
+#endif
                 PropertyId tempPropertyId;
                 /*JavascriptString* tempPropertyStringName =*/ this->GetCurrentAndMoveNextFromObject(this->objectIndex, tempPropertyId, attributes);
+#if ENABLE_TTD
             }
+#endif
 #endif
             propertyStringName = nullptr;
         }
