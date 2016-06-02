@@ -131,29 +131,29 @@ HINSTANCE ChakraRTInterface::LoadChakraDll(ArgInfo* argInfo)
     m_jsApiHooks.pfJsrtDiagEvaluate = (JsAPIHooks::JsrtDiagEvaluate)GetChakraCoreSymbol(library, "JsDiagEvaluate");
 
 #if DBG || ENABLE_DEBUG_CONFIG_OPTIONS
-    m_jsApiHooks.pfJsrtTTDCreateRecordRuntime = (JsAPIHooks::JsrtTTDCreateRecordRuntimePtr)GetProcAddress(library, "JsTTDCreateRecordRuntime");
-    m_jsApiHooks.pfJsrtTTDCreateDebugRuntime = (JsAPIHooks::JsrtTTDCreateDebugRuntimePtr)GetProcAddress(library, "JsTTDCreateDebugRuntime");
-    m_jsApiHooks.pfJsrtTTDCreateContext = (JsAPIHooks::JsrtTTDCreateContextPtr)GetProcAddress(library, "JsTTDCreateContext");
-    m_jsApiHooks.pfJsrtTTDRunScript = (JsAPIHooks::JsrtTTDRunScriptPtr)GetProcAddress(library, "JsTTDRunScript");
-    m_jsApiHooks.pfJsrtTTDCallFunction = (JsAPIHooks::JsrtTTDCallFunctionPtr)GetProcAddress(library, "JsTTDCallFunction");
+    m_jsApiHooks.pfJsrtTTDCreateRecordRuntime = (JsAPIHooks::JsrtTTDCreateRecordRuntimePtr)GetChakraCoreSymbol(library, "JsTTDCreateRecordRuntime");
+    m_jsApiHooks.pfJsrtTTDCreateDebugRuntime = (JsAPIHooks::JsrtTTDCreateDebugRuntimePtr)GetChakraCoreSymbol(library, "JsTTDCreateDebugRuntime");
+    m_jsApiHooks.pfJsrtTTDCreateContext = (JsAPIHooks::JsrtTTDCreateContextPtr)GetChakraCoreSymbol(library, "JsTTDCreateContext");
+    m_jsApiHooks.pfJsrtTTDRunScript = (JsAPIHooks::JsrtTTDRunScriptPtr)GetChakraCoreSymbol(library, "JsTTDRunScript");
+    m_jsApiHooks.pfJsrtTTDCallFunction = (JsAPIHooks::JsrtTTDCallFunctionPtr)GetChakraCoreSymbol(library, "JsTTDCallFunction");
 
-    m_jsApiHooks.pfJsrtTTDSetDebuggerForReplay = (JsAPIHooks::JsrtTTDSetDebuggerForReplayPtr)GetProcAddress(library, "JsTTDSetDebuggerForReplay");
-    m_jsApiHooks.pfJsrtTTDSetIOCallbacks = (JsAPIHooks::JsrtTTDSetIOCallbacksPtr)GetProcAddress(library, "JsTTDSetIOCallbacks");
+    m_jsApiHooks.pfJsrtTTDSetDebuggerForReplay = (JsAPIHooks::JsrtTTDSetDebuggerForReplayPtr)GetChakraCoreSymbol(library, "JsTTDSetDebuggerForReplay");
+    m_jsApiHooks.pfJsrtTTDSetIOCallbacks = (JsAPIHooks::JsrtTTDSetIOCallbacksPtr)GetChakraCoreSymbol(library, "JsTTDSetIOCallbacks");
 
-    m_jsApiHooks.pfJsrtTTDStartTimeTravelRecording = (JsAPIHooks::JsrtTTDStartTimeTravelRecordingPtr)GetProcAddress(library, "JsTTDStartTimeTravelRecording");
-    m_jsApiHooks.pfJsrtTTDStopTimeTravelRecording = (JsAPIHooks::JsrtTTDStopTimeTravelRecordingPtr)GetProcAddress(library, "JsTTDStopTimeTravelRecording");
-    m_jsApiHooks.pfJsrtTTDEmitTimeTravelRecording = (JsAPIHooks::JsrtTTDEmitTimeTravelRecordingPtr)GetProcAddress(library, "JsTTDEmitTimeTravelRecording");
+    m_jsApiHooks.pfJsrtTTDStartTimeTravelRecording = (JsAPIHooks::JsrtTTDStartTimeTravelRecordingPtr)GetChakraCoreSymbol(library, "JsTTDStartTimeTravelRecording");
+    m_jsApiHooks.pfJsrtTTDStopTimeTravelRecording = (JsAPIHooks::JsrtTTDStopTimeTravelRecordingPtr)GetChakraCoreSymbol(library, "JsTTDStopTimeTravelRecording");
+    m_jsApiHooks.pfJsrtTTDEmitTimeTravelRecording = (JsAPIHooks::JsrtTTDEmitTimeTravelRecordingPtr)GetChakraCoreSymbol(library, "JsTTDEmitTimeTravelRecording");
 
-    m_jsApiHooks.pfJsrtTTDStartTimeTravelDebugging = (JsAPIHooks::JsrtTTDStartTimeTravelDebuggingPtr)GetProcAddress(library, "JsTTDStartTimeTravelDebugging");
-    m_jsApiHooks.pfJsrtTTDPauseTimeTravelBeforeRuntimeOperation = (JsAPIHooks::JsrtTTDPauseTimeTravelBeforeRuntimeOperationPtr)GetProcAddress(library, "JsTTDPauseTimeTravelBeforeRuntimeOperation");
-    m_jsApiHooks.pfJsrtTTDReStartTimeTravelAfterRuntimeOperation = (JsAPIHooks::JsrtTTDReStartTimeTravelAfterRuntimeOperationPtr)GetProcAddress(library, "JsTTDReStartTimeTravelAfterRuntimeOperation");
+    m_jsApiHooks.pfJsrtTTDStartTimeTravelDebugging = (JsAPIHooks::JsrtTTDStartTimeTravelDebuggingPtr)GetChakraCoreSymbol(library, "JsTTDStartTimeTravelDebugging");
+    m_jsApiHooks.pfJsrtTTDPauseTimeTravelBeforeRuntimeOperation = (JsAPIHooks::JsrtTTDPauseTimeTravelBeforeRuntimeOperationPtr)GetChakraCoreSymbol(library, "JsTTDPauseTimeTravelBeforeRuntimeOperation");
+    m_jsApiHooks.pfJsrtTTDReStartTimeTravelAfterRuntimeOperation = (JsAPIHooks::JsrtTTDReStartTimeTravelAfterRuntimeOperationPtr)GetChakraCoreSymbol(library, "JsTTDReStartTimeTravelAfterRuntimeOperation");
 
-    m_jsApiHooks.pfJsrtTTDNotifyHostCallbackCreatedOrCanceled = (JsAPIHooks::JsrtTTDNotifyHostCallbackCreatedOrCanceledPtr)GetProcAddress(library, "JsTTDNotifyHostCallbackCreatedOrCanceled");
-    m_jsApiHooks.pfJsrtTTDNotifyYield = (JsAPIHooks::JsrtTTDNotifyYieldPtr)GetProcAddress(library, "JsTTDNotifyYield");
+    m_jsApiHooks.pfJsrtTTDNotifyHostCallbackCreatedOrCanceled = (JsAPIHooks::JsrtTTDNotifyHostCallbackCreatedOrCanceledPtr)GetChakraCoreSymbol(library, "JsTTDNotifyHostCallbackCreatedOrCanceled");
+    m_jsApiHooks.pfJsrtTTDNotifyYield = (JsAPIHooks::JsrtTTDNotifyYieldPtr)GetChakraCoreSymbol(library, "JsTTDNotifyYield");
 
-    m_jsApiHooks.pfJsrtTTDPrepContextsForTopLevelEventMove = (JsAPIHooks::JsrtTTDPrepContextsForTopLevelEventMovePtr)GetProcAddress(library, "JsTTDPrepContextsForTopLevelEventMove");
-    m_jsApiHooks.pfJsrtTTDMoveToTopLevelEvent = (JsAPIHooks::JsrtTTDMoveToTopLevelEventPtr)GetProcAddress(library, "JsTTDMoveToTopLevelEvent");
-    m_jsApiHooks.pfJsrtTTDReplayExecution = (JsAPIHooks::JsrtTTDReplayExecutionPtr)GetProcAddress(library, "JsTTDReplayExecution");
+    m_jsApiHooks.pfJsrtTTDPrepContextsForTopLevelEventMove = (JsAPIHooks::JsrtTTDPrepContextsForTopLevelEventMovePtr)GetChakraCoreSymbol(library, "JsTTDPrepContextsForTopLevelEventMove");
+    m_jsApiHooks.pfJsrtTTDMoveToTopLevelEvent = (JsAPIHooks::JsrtTTDMoveToTopLevelEventPtr)GetChakraCoreSymbol(library, "JsTTDMoveToTopLevelEvent");
+    m_jsApiHooks.pfJsrtTTDReplayExecution = (JsAPIHooks::JsrtTTDReplayExecutionPtr)GetChakraCoreSymbol(library, "JsTTDReplayExecution");
 #else
     m_jsApiHooks.pfJsrtTTDCreateRecordRuntime = nullptr;
     m_jsApiHooks.pfJsrtTTDCreateDebugRuntime = nullptr;
