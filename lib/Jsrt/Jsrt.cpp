@@ -391,7 +391,7 @@ JsErrorCode CallFunctionCore(_In_ INT64 hostCallbackId, _In_ JsValueRef function
 
 /////////////////////
 
-STDAPI_(JsErrorCode) JsCreateRuntime(_In_ JsRuntimeAttributes attributes, _In_opt_ JsThreadServiceCallback threadService, _Out_ JsRuntimeHandle *runtimeHandle)
+CHAKRA_API JsCreateRuntime(_In_ JsRuntimeAttributes attributes, _In_opt_ JsThreadServiceCallback threadService, _Out_ JsRuntimeHandle *runtimeHandle)
 {
     return CreateRuntimeCore(attributes, nullptr, nullptr, UINT_MAX, UINT_MAX, threadService, runtimeHandle);
 }
@@ -3232,32 +3232,32 @@ CHAKRA_API JsRunSerializedScriptWithCallback(_In_ JsSerializedScriptLoadSourceCa
 
 /////////////////////
 
-STDAPI_(JsErrorCode) JsTTDCreateRecordRuntime(_In_ JsRuntimeAttributes attributes, _In_ wchar_t* infoUri, _In_ UINT32 snapInterval, _In_ UINT32 snapHistoryLength, _In_opt_ JsThreadServiceCallback threadService, _Out_ JsRuntimeHandle *runtime)
+CHAKRA_API JsTTDCreateRecordRuntime(_In_ JsRuntimeAttributes attributes, _In_ wchar_t* infoUri, _In_ UINT32 snapInterval, _In_ UINT32 snapHistoryLength, _In_opt_ JsThreadServiceCallback threadService, _Out_ JsRuntimeHandle *runtime)
 {
     return CreateRuntimeCore(attributes, infoUri, nullptr, snapInterval, snapHistoryLength, threadService, runtime);
 }
 
-STDAPI_(JsErrorCode) JsTTDCreateDebugRuntime(_In_ JsRuntimeAttributes attributes, _In_ wchar_t* infoUri, _In_opt_ JsThreadServiceCallback threadService, _Out_ JsRuntimeHandle *runtime)
+CHAKRA_API JsTTDCreateDebugRuntime(_In_ JsRuntimeAttributes attributes, _In_ wchar_t* infoUri, _In_opt_ JsThreadServiceCallback threadService, _Out_ JsRuntimeHandle *runtime)
 {
     return CreateRuntimeCore(attributes, nullptr, infoUri, UINT_MAX, UINT_MAX, threadService, runtime);
 }
 
-STDAPI_(JsErrorCode) JsTTDCreateContext(_In_ JsRuntimeHandle runtime, _Out_ JsContextRef *newContext)
+CHAKRA_API JsTTDCreateContext(_In_ JsRuntimeHandle runtime, _Out_ JsContextRef *newContext)
 {
     return CreateContextCore(runtime, true, newContext);
 }
 
-STDAPI_(JsErrorCode) JsTTDRunScript(_In_ INT64 hostCallbackId, _In_z_ const wchar_t *script, _In_ JsSourceContext sourceContext, _In_z_ const wchar_t *sourceUrl, _Out_ JsValueRef *result)
+CHAKRA_API JsTTDRunScript(_In_ INT64 hostCallbackId, _In_z_ const wchar_t *script, _In_ JsSourceContext sourceContext, _In_z_ const wchar_t *sourceUrl, _Out_ JsValueRef *result)
 {
     return RunScriptCore(hostCallbackId, script, sourceContext, sourceUrl, false, JsParseScriptAttributeNone, false /*isModule*/, result);
 }
 
-STDAPI_(JsErrorCode) JsTTDCallFunction(_In_ INT64 hostCallbackId, _In_ JsValueRef function, _In_reads_(argumentCount) JsValueRef *arguments, _In_ unsigned short argumentCount, _Out_opt_ JsValueRef *result)
+CHAKRA_API JsTTDCallFunction(_In_ INT64 hostCallbackId, _In_ JsValueRef function, _In_reads_(argumentCount) JsValueRef *arguments, _In_ unsigned short argumentCount, _Out_opt_ JsValueRef *result)
 {
     return CallFunctionCore(hostCallbackId, function, arguments, argumentCount, result);
 }
 
-STDAPI_(JsErrorCode) JsTTDSetDebuggerForReplay()
+CHAKRA_API JsTTDSetDebuggerForReplay()
 {
 #if !ENABLE_TTD_DEBUGGING
     return JsErrorCategoryUsage;
@@ -3276,7 +3276,7 @@ STDAPI_(JsErrorCode) JsTTDSetDebuggerForReplay()
 #endif
 }
 
-STDAPI_(JsErrorCode) JsTTDSetIOCallbacks(_In_ JsRuntimeHandle runtime, _In_ JsTTDInitializeUriCallback ttdInitializeUriFunction, _In_ JsTTDInitializeForWriteLogStreamCallback writeInitializeFunction, _In_ JsTTDGetLogStreamCallback getLogStreamInfo, _In_ JsTTDGetSnapshotStreamCallback getSnapshotStreamInfo, _In_ JsTTDGetSrcCodeStreamCallback getSrcCodeStreamInfo, _In_ JsTTDReadBytesFromStreamCallback readBytesFromStream, _In_ JsTTDWriteBytesToStreamCallback writeBytesToStream, _In_ JsTTDFlushAndCloseStreamCallback flushAndCloseStream)
+CHAKRA_API JsTTDSetIOCallbacks(_In_ JsRuntimeHandle runtime, _In_ JsTTDInitializeUriCallback ttdInitializeUriFunction, _In_ JsTTDInitializeForWriteLogStreamCallback writeInitializeFunction, _In_ JsTTDGetLogStreamCallback getLogStreamInfo, _In_ JsTTDGetSnapshotStreamCallback getSnapshotStreamInfo, _In_ JsTTDGetSrcCodeStreamCallback getSrcCodeStreamInfo, _In_ JsTTDReadBytesFromStreamCallback readBytesFromStream, _In_ JsTTDWriteBytesToStreamCallback writeBytesToStream, _In_ JsTTDFlushAndCloseStreamCallback flushAndCloseStream)
 {
 #if !ENABLE_TTD
     return JsErrorCategoryUsage;
@@ -3303,7 +3303,7 @@ STDAPI_(JsErrorCode) JsTTDSetIOCallbacks(_In_ JsRuntimeHandle runtime, _In_ JsTT
 #endif
 }
 
-STDAPI_(JsErrorCode) JsTTDStartTimeTravelRecording()
+CHAKRA_API JsTTDStartTimeTravelRecording()
 {
 #if !ENABLE_TTD
     return JsErrorCategoryUsage;
@@ -3343,7 +3343,7 @@ STDAPI_(JsErrorCode) JsTTDStartTimeTravelRecording()
 #endif
 }
 
-STDAPI_(JsErrorCode) JsTTDStopTimeTravelRecording()
+CHAKRA_API JsTTDStopTimeTravelRecording()
 {
 #if !ENABLE_TTD
     return JsErrorCategoryUsage;
@@ -3382,7 +3382,7 @@ STDAPI_(JsErrorCode) JsTTDStopTimeTravelRecording()
 #endif
 }
 
-STDAPI_(JsErrorCode) JsTTDEmitTimeTravelRecording()
+CHAKRA_API JsTTDEmitTimeTravelRecording()
 {
 #if !ENABLE_TTD
     return JsErrorCategoryUsage;
@@ -3420,7 +3420,7 @@ STDAPI_(JsErrorCode) JsTTDEmitTimeTravelRecording()
 #endif
 }
 
-STDAPI_(JsErrorCode) JsTTDStartTimeTravelDebugging()
+CHAKRA_API JsTTDStartTimeTravelDebugging()
 {
 #if !ENABLE_TTD
     return JsErrorCategoryUsage;
@@ -3452,7 +3452,7 @@ STDAPI_(JsErrorCode) JsTTDStartTimeTravelDebugging()
 #endif
 }
 
-STDAPI_(JsErrorCode) JsTTDPauseTimeTravelBeforeRuntimeOperation()
+CHAKRA_API JsTTDPauseTimeTravelBeforeRuntimeOperation()
 {
 #if !ENABLE_TTD
     return JsErrorCategoryUsage;
@@ -3468,7 +3468,7 @@ STDAPI_(JsErrorCode) JsTTDPauseTimeTravelBeforeRuntimeOperation()
 #endif
 }
 
-STDAPI_(JsErrorCode) JsTTDReStartTimeTravelAfterRuntimeOperation()
+CHAKRA_API JsTTDReStartTimeTravelAfterRuntimeOperation()
 {
 #if !ENABLE_TTD
     return JsErrorCategoryUsage;
@@ -3483,7 +3483,7 @@ STDAPI_(JsErrorCode) JsTTDReStartTimeTravelAfterRuntimeOperation()
 #endif
 }
 
-STDAPI_(JsErrorCode) JsTTDNotifyHostCallbackCreatedOrCanceled(bool isCreated, bool isCancel, bool isRepeating, JsValueRef function, INT64 callbackId)
+CHAKRA_API JsTTDNotifyHostCallbackCreatedOrCanceled(bool isCreated, bool isCancel, bool isRepeating, JsValueRef function, INT64 callbackId)
 {
 #if !ENABLE_TTD
     return JsErrorCategoryUsage;
@@ -3502,7 +3502,7 @@ STDAPI_(JsErrorCode) JsTTDNotifyHostCallbackCreatedOrCanceled(bool isCreated, bo
 #endif
 }
 
-STDAPI_(JsErrorCode) JsTTDNotifyYield()
+CHAKRA_API JsTTDNotifyYield()
 {
 #if !ENABLE_TTD
     return JsErrorCategoryUsage;
@@ -3519,7 +3519,7 @@ STDAPI_(JsErrorCode) JsTTDNotifyYield()
 #endif
 }
 
-STDAPI_(JsErrorCode) JsTTDPrepContextsForTopLevelEventMove(JsRuntimeHandle runtimeHandle, INT64 targetEventTime, INT64* targetStartSnapTime)
+CHAKRA_API JsTTDPrepContextsForTopLevelEventMove(JsRuntimeHandle runtimeHandle, INT64 targetEventTime, INT64* targetStartSnapTime)
 {
 #if !ENABLE_TTD_DEBUGGING
     return JsErrorCategoryUsage;
@@ -3596,7 +3596,7 @@ STDAPI_(JsErrorCode) JsTTDPrepContextsForTopLevelEventMove(JsRuntimeHandle runti
 #endif
 }
 
-STDAPI_(JsErrorCode) JsTTDMoveToTopLevelEvent(INT64 snapshotTime, INT64 eventTime)
+CHAKRA_API JsTTDMoveToTopLevelEvent(INT64 snapshotTime, INT64 eventTime)
 {
 #if !ENABLE_TTD_DEBUGGING
     return JsErrorCategoryUsage;
@@ -3687,7 +3687,7 @@ STDAPI_(JsErrorCode) JsTTDMoveToTopLevelEvent(INT64 snapshotTime, INT64 eventTim
 #endif
 }
 
-STDAPI_(JsErrorCode) JsTTDReplayExecution(INT64* rootEventTime)
+CHAKRA_API JsTTDReplayExecution(INT64* rootEventTime)
 {
 #if !ENABLE_TTD_DEBUGGING
     return JsErrorCategoryUsage;

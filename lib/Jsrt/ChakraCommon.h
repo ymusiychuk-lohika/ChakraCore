@@ -3072,7 +3072,7 @@ typedef unsigned char* ChakraBytePtr;
     /// <returns>
     ///     The code <c>JsNoError</c> if the operation succeeded, a failure code otherwise.
     /// </returns>
-    STDAPI_(JsErrorCode)
+    CHAKRA_API
         JsTTDCreateRecordRuntime(
             _In_ JsRuntimeAttributes attributes,
             _In_z_ wchar_t* infoUri,
@@ -3092,7 +3092,7 @@ typedef unsigned char* ChakraBytePtr;
     /// <returns>
     ///     The code <c>JsNoError</c> if the operation succeeded, a failure code otherwise.
     /// </returns>
-    STDAPI_(JsErrorCode)
+    CHAKRA_API
         JsTTDCreateDebugRuntime(
             _In_ JsRuntimeAttributes attributes,
             _In_z_ wchar_t* infoUri,
@@ -3106,7 +3106,7 @@ typedef unsigned char* ChakraBytePtr;
     /// <param name="runtime">The runtime the script context is being created in.</param>
     /// <param name="newContext">The created script context.</param>
     /// <returns>The code <c>JsNoError</c> if the operation succeeded, a failure code otherwise.</returns>
-    STDAPI_(JsErrorCode)
+    CHAKRA_API
         JsTTDCreateContext(
             _In_ JsRuntimeHandle runtime,
             _Out_ JsContextRef *newContext);
@@ -3124,7 +3124,7 @@ typedef unsigned char* ChakraBytePtr;
     /// <param name="sourceUrl">The location the script came from.</param>
     /// <param name="result">The result of the script, if any. This parameter can be null.</param>
     /// <returns>The code <c>JsNoError</c> if the operation succeeded, a failure code otherwise.</returns>
-    STDAPI_(JsErrorCode)
+    CHAKRA_API
         JsTTDRunScript(
             _In_ INT64 hostCallbackId,
             _In_z_ const wchar_t *script,
@@ -3148,7 +3148,7 @@ typedef unsigned char* ChakraBytePtr;
     /// <param name="argumentCount">The number of arguments being passed in to the function.</param>
     /// <param name="result">The value returned from the function invocation, if any.</param>
     /// <returns>The code <c>JsNoError</c> if the operation succeeded, a failure code otherwise.</returns>
-    STDAPI_(JsErrorCode)
+    CHAKRA_API
         JsTTDCallFunction(
             _In_ INT64 hostCallbackId,
             _In_ JsValueRef function,
@@ -3160,7 +3160,7 @@ typedef unsigned char* ChakraBytePtr;
     ///     Set the current script context into debug/replay mode for replay without debugger attach.
     /// </summary>
     /// <returns>The code <c>JsNoError</c> if the operation succeeded, a failure code otherwise.</returns>
-    STDAPI_(JsErrorCode)
+    CHAKRA_API
         JsTTDSetDebuggerForReplay();
 
     /// <summary>
@@ -3175,7 +3175,7 @@ typedef unsigned char* ChakraBytePtr;
     /// <param name="readBytesFromStream">The <c>JsTTDReadBytesFromStreamCallback</c> function for reading bytes from a HANDLE.</param>
     /// <param name="writeBytesToStream">The <c>JsTTDWriteBytesToStreamCallback</c> function for writing bytes to a HANDLE.</param>
     /// <param name="flushAndCloseStream">The <c>JsTTDFlushAndCloseStreamCallback</c> function for flushing and closing a HANDLE as needed.</param>
-    STDAPI_(JsErrorCode)
+    CHAKRA_API
         JsTTDSetIOCallbacks(
             _In_ JsRuntimeHandle runtime,
             _In_ JsTTDInitializeUriCallback ttdInitializeTTDUriFunction,
@@ -3191,42 +3191,42 @@ typedef unsigned char* ChakraBytePtr;
     ///     Start Time-Travel Recording.
     /// </summary>
     /// <returns>The code <c>JsNoError</c> if the operation succeeded, a failure code otherwise.</returns>
-    STDAPI_(JsErrorCode)
+    CHAKRA_API
         JsTTDStartTimeTravelRecording();
 
     /// <summary>
     ///     Stop Time-Travel Recording.
     /// </summary>
     /// <returns>The code <c>JsNoError</c> if the operation succeeded, a failure code otherwise.</returns>
-    STDAPI_(JsErrorCode)
+    CHAKRA_API
         JsTTDStopTimeTravelRecording();
 
     /// <summary>
     ///     Emit Time-Travel Recording.
     /// </summary>
     /// <returns>The code <c>JsNoError</c> if the operation succeeded, a failure code otherwise.</returns>
-    STDAPI_(JsErrorCode)
+    CHAKRA_API
         JsTTDEmitTimeTravelRecording();
 
     /// <summary>
     ///     Start Time-Travel Debugging.
     /// </summary>
     /// <returns>The code <c>JsNoError</c> if the operation succeeded, a failure code otherwise.</returns>
-    STDAPI_(JsErrorCode)
+    CHAKRA_API
         JsTTDStartTimeTravelDebugging();
 
     /// <summary>
     ///     Pause Time-Travel recording gefor executing code on behalf of debugger or other diagnostic/telemetry.
     /// </summary>
     /// <returns>The code <c>JsNoError</c> if the operation succeeded, a failure code otherwise.</returns>
-    STDAPI_(JsErrorCode)
+    CHAKRA_API
         JsTTDPauseTimeTravelBeforeRuntimeOperation();
 
     /// <summary>
     ///     ReStart Time-Travel recording after executing code on behalf of debugger or other diagnostic/telemetry.
     /// </summary>
     /// <returns>The code <c>JsNoError</c> if the operation succeeded, a failure code otherwise.</returns>
-    STDAPI_(JsErrorCode)
+    CHAKRA_API
         JsTTDReStartTimeTravelAfterRuntimeOperation();
 
     /// <summary>
@@ -3238,7 +3238,7 @@ typedef unsigned char* ChakraBytePtr;
     /// <param name="function">The function associated with the callbackId.</param>
     /// <param name="callbackId">The callbackId that is being created/canceled.</param>
     /// <returns>The code <c>JsNoError</c> if the operation succeeded, a failure code otherwise.</returns>
-    STDAPI_(JsErrorCode) 
+    CHAKRA_API 
         JsTTDNotifyHostCallbackCreatedOrCanceled(
             _In_ bool isCreated,
             _In_ bool isCancel, 
@@ -3250,7 +3250,7 @@ typedef unsigned char* ChakraBytePtr;
     ///     Notify the Js runtime we are at a safe yield point in the event loop (i.e. no locals on the stack and we can proccess as desired).
     /// </summary>
     /// <returns>The code <c>JsNoError</c> if the operation succeeded, a failure code otherwise.</returns>
-    STDAPI_(JsErrorCode)
+    CHAKRA_API
         JsTTDNotifyYield();
 
     /// <summary>
@@ -3261,7 +3261,7 @@ typedef unsigned char* ChakraBytePtr;
     /// <param name="targetEventTime">The event that we are planning to move to.</param>
     /// <param name="targetStartSnapTime">Gets the event time that we will start executing from to move to the given target time.</param>
     /// <returns>The code <c>JsNoError</c> if the operation succeeded, a failure code otherwise.</returns>
-    STDAPI_(JsErrorCode)
+    CHAKRA_API
         JsTTDPrepContextsForTopLevelEventMove(
             _In_ JsRuntimeHandle runtimeHandle, 
             _In_ INT64 targetEventTime, 
@@ -3274,7 +3274,7 @@ typedef unsigned char* ChakraBytePtr;
     /// <param name="targetEventTime">The event that we want to move to.</param>
     /// <param name="targetStartSnapTime">The event time that we will start executing from to move to the given target time.</param>
     /// <returns>The code <c>JsNoError</c> if the operation succeeded, a failure code otherwise.</returns>
-    STDAPI_(JsErrorCode)
+    CHAKRA_API
         JsTTDMoveToTopLevelEvent(
             _In_ INT64 snapshotTime, 
             _In_ INT64 eventTime);
@@ -3287,7 +3287,7 @@ typedef unsigned char* ChakraBytePtr;
     /// </summary>
     /// <param name="rootEventTime">The event time that we should move to next or notification (-1) that replay has ended.</param>
     /// <returns>See summary.</returns>
-    STDAPI_(JsErrorCode)
+    CHAKRA_API
         JsTTDReplayExecution(
             _Out_ INT64* rootEventTime);
 
