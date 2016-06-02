@@ -324,7 +324,7 @@ namespace JsUtil
         T& Last()
         {
             Assert(this->count >= 1);
-            return this->Item(count - 1);
+            return this->Item(this->count - 1);
         }
 
         // Finds the last element that satisfies the condition in the passed in function.
