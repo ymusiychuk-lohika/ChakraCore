@@ -37,6 +37,7 @@
         $(ChakraCoreRootDirectory)Lib\Backend;
         %(AdditionalIncludeDirectories);
       </AdditionalIncludeDirectories>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Test|x64'">false</TreatWarningAsError>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
